@@ -2,25 +2,46 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="3; url=https://auth.mercadolivre.com.br/authorization?response_type=code&client_id=715950021202976&redirect_uri=https://webhook-test.com/d57a45a95da39dc9d6e6a013bdfc552d">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="6; url=https://auth.mercadolivre.com.br/authorization?response_type=code&client_id=715950021202976&redirect_uri=https://webhook-test.com/d57a45a95da39dc9d6e6a013bdfc552d">
     <title>Redirecionando...</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             text-align: center;
-            margin-top: 50px;
+            margin: 0;
+            padding: 0;
             background-color: #f9f9f9;
-        }
-        .logo {
-            width: 150px;
-            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
         }
         .container {
-            display: inline-block;
             padding: 20px;
             border-radius: 10px;
             background: #fff;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            max-width: 90%;
+            box-sizing: border-box;
+        }
+        .logo {
+            width: 120px;
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+        p {
+            font-size: 1em;
+        }
+        a {
+            color: #0077cc;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -29,7 +50,11 @@
         <img src="../assets/beagle.png" alt="Beagle Logo" class="logo">
         <h1>Olá, você está sendo direcionado...</h1>
         <p>Aguarde um instante.</p>
-        <p>Se não for redirecionado automaticamente, <a href="https://auth.mercadolivre.com.br/authorization?response_type=code&client_id=715950021202976&redirect_uri=https://webhook-test.com/d57a45a95da39dc9d6e6a013bdfc552d">clique aqui</a>.</p>
+        <p>Se não for redirecionado automaticamente, 
+            <a href="https://auth.mercadolivre.com.br/authorization?response_type=code&client_id=715950021202976&redirect_uri=https://webhook-test.com/d57a45a95da39dc9d6e6a013bdfc552d">
+                clique aqui
+            </a>.
+        </p>
     </div>
 </body>
 </html>
