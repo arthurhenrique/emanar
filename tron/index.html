@@ -31,7 +31,7 @@ function newCycle(color) {
   let y = Math.floor(Math.random() * canvas.height);
   let dir = Math.floor(Math.random() * 4) * 90;
   let vel = directionToVelocity(dir);
-  return { x, y, dir, dx: vel.dx, dy: vel.dy, speed: gridSize, color, trail: [{x, y}] };
+  return { x, y, dir, dx: vel.dx, dy: vel.dy, speed: 5, color, trail: [{x, y}] };
 }
 
 function directionToVelocity(dir) {
