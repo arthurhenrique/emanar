@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * {margin:0;padding:0;box-sizing:border-box;}
+    body, html {width:100%;height:100%;overflow:hidden;background:#000;}
+    canvas {display:block;}
+  </style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const colors = ['#0ff', '#f80'];
+let cycles = [];
+const gridSize = 10;
+let animId;
+
+function gridKey(x, y) {
+  return `${Math.floor(x / gridSize)},${Math.floor(y / gridSize)}`;
+}
+
+function newCycle(color) {
+  let x = Math.floor(Math.random() * canvas.width);
+  let y = Math.floor(Math.random() * canvas.height);
+  let dir = Math.floor(Math.random() * 4) * 90;
+  let vel = directionToVelocity(dir);
+  return { x, y, dir, dx: vel.dx, dy: vel.dy, speed: gridSize, color, trail: [{x, y}] };
+}
+
+function directionToVelocity(dir) {
+  switch(dir) {
+    case 0: return { dx: 1, dy: 0 };
+    case 90: return { dx: 0, dy: 1 };
+    case 180: return { dx: -1, dy: 0 };
+    case 270: return { dx: 0, dy: -1 };
+  }
+}
+
+function resetGame() {
+  cancelAnimationFrame(animId);
+  cycles = [];
+  ctx.fillStyle = "#000";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  cycles = [newCycle(colors[0]), newCycle(colors[1])];
+  draw();
+}
+
+function predictTrail(cycle, depth) {
+  let trail = new Set(cycle.trail.map(p => gridKey(p.x, p.y)));
+  let x = cycle.x;
+  let y = cycle.y;
+  let dir = cycle.dir;
+
+  for (let i = 0; i < depth; i++) {
+    const vel = directionToVelocity(dir);
+    x += vel.dx * gridSize;
+    y += vel.dy * gridSize;
+    if (x < 0 || x > canvas.width || y < 0 || y > canvas.height) break;
+    trail.add(gridKey(x, y));
+  }
+  return trail;
+}
+
+function chooseBestAggressiveMove(cycle, predictionDepth) {
+  const other = cycles.find(c => c !== cycle);
+  const ownTrail = new Set(cycle.trail.map(p => gridKey(p.x, p.y)));
+  const otherTrail = predictTrail(other, predictionDepth);
+
+  const moves = [
+    { dir: cycle.dir, vel: directionToVelocity(cycle.dir) },
+    { dir: (cycle.dir + 90) % 360, vel: directionToVelocity((cycle.dir + 90) % 360) },
+    { dir: (cycle.dir + 270) % 360, vel: directionToVelocity((cycle.dir + 270) % 360) }
+  ];
+
+  let bestMove = moves[0];
+  let bestScore = -Infinity;
+
+  for (let move of moves) {
+    let nx = cycle.x + move.vel.dx * gridSize;
+    let ny = cycle.y + move.vel.dy * gridSize;
+    let key = gridKey(nx, ny);
+    let safe = !(ownTrail.has(key) || otherTrail.has(key) || nx < 0 || nx > canvas.width || ny < 0 || ny > canvas.height);
+    let towardsEnemy = Math.hypot(nx - other.x, ny - other.y);
+
+    // mais agressivo → peso maior + suicídio controlado
+    let score = safe ? (2000 - towardsEnemy * 0.5) : -Infinity;
+    if (towardsEnemy < gridSize * 2) score += 500;  // se tá muito perto, se joga!
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestMove = move;
+    }
+  }
+  return bestMove;
+}
+
+function draw() {
+  for (let i = 0; i < cycles.length; i++) {
+    const c = cycles[i];
+    const predictionDepth = i === 0 ? 6 : 2;  // Moto 1 e 2 impulsivas
+
+    const move = chooseBestAggressiveMove(c, predictionDepth);
+    c.dir = move.dir;
+    c.dx = move.vel.dx;
+    c.dy = move.vel.dy;
+
+    c.x += c.dx * c.speed;
+    c.y += c.dy * c.speed;
+
+    const key = gridKey(c.x, c.y);
+    const allTrails = cycles.flatMap(cyc => cyc.trail.map(p => gridKey(p.x, p.y)));
+    if (allTrails.includes(key) || c.x < 0 || c.x > canvas.width || c.y < 0 || c.y > canvas.height) {
+      resetGame();
+      return;
+    }
+
+    c.trail.push({x: c.x, y: c.y});
+
+    ctx.beginPath();
+    ctx.moveTo(c.trail[0].x, c.trail[0].y);
+    for (let j = 1; j < c.trail.length; j++) {
+      ctx.lineTo(c.trail[j].x, c.trail[j].y);
+    }
+    ctx.strokeStyle = c.color;
+    ctx.shadowColor = c.color;
+    ctx.shadowBlur = 1;
+    ctx.lineWidth = 5;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  }
+
+  animId = requestAnimationFrame(draw);
+}
+
+resetGame();
+
+window.addEventListener('resize', () => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  resetGame();
+});
+</script>
+</body>
+</html>
