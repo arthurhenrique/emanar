@@ -88,7 +88,10 @@ function chooseBestAggressiveMove(cycle, predictionDepth) {
     let key = gridKey(nx, ny);
     let safe = !(ownTrail.has(key) || otherTrail.has(key) || nx < 0 || nx > canvas.width || ny < 0 || ny > canvas.height);
     let towardsEnemy = Math.hypot(nx - other.x, ny - other.y);
-    let score = safe ? (1000 - towardsEnemy) : -Infinity;
+
+    // mais agressivo → peso maior + suicídio controlado
+    let score = safe ? (2000 - towardsEnemy * 0.5) : -Infinity;
+    if (towardsEnemy < gridSize * 2) score += 500;  // se tá muito perto, se joga!
 
     if (score > bestScore) {
       bestScore = score;
@@ -101,7 +104,7 @@ function chooseBestAggressiveMove(cycle, predictionDepth) {
 function draw() {
   for (let i = 0; i < cycles.length; i++) {
     const c = cycles[i];
-    const predictionDepth = i === 0 ? 5 : 3;
+    const predictionDepth = i === 0 ? 6 : 2;  // Moto 1 e 2 impulsivas
 
     const move = chooseBestAggressiveMove(c, predictionDepth);
     c.dir = move.dir;
