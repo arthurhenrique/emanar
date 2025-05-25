@@ -31,7 +31,7 @@ function newCycle(color) {
   let y = Math.floor(Math.random() * canvas.height);
   let dir = Math.floor(Math.random() * 4) * 90;
   let vel = directionToVelocity(dir);
-  return { x, y, dir, dx: vel.dx, dy: vel.dy, speed: gridSize, color, trail: new Set([gridKey(x, y)]) };
+  return { x, y, dir, dx: vel.dx, dy: vel.dy, speed: gridSize, color, trail: [{x, y}] };
 }
 
 function directionToVelocity(dir) {
@@ -48,17 +48,8 @@ function resetGame() {
   cycles = [newCycle(colors[0]), newCycle(colors[1])];
 }
 
-function neighbors(x, y) {
-  return [
-    { x: x + gridSize, y },
-    { x: x - gridSize, y },
-    { x, y: y + gridSize },
-    { x, y: y - gridSize }
-  ].filter(n => n.x >= 0 && n.x <= canvas.width && n.y >= 0 && n.y <= canvas.height);
-}
-
 function predictTrail(cycle) {
-  let trail = new Set([...cycle.trail]);
+  let trail = new Set(cycle.trail.map(p => gridKey(p.x, p.y)));
   let x = cycle.x;
   let y = cycle.y;
   let dir = cycle.dir;
@@ -73,10 +64,10 @@ function predictTrail(cycle) {
   return trail;
 }
 
-function chooseBestMove(cycle) {
+function chooseBestAggressiveMove(cycle) {
   const other = cycles.find(c => c !== cycle);
-  const ownTrail = new Set([...cycle.trail]);
-  const otherTrail = new Set([...other.trail, ...predictTrail(other)]);
+  const ownTrail = new Set(cycle.trail.map(p => gridKey(p.x, p.y)));
+  const otherTrail = predictTrail(other);
 
   const moves = [
     { dir: cycle.dir, vel: directionToVelocity(cycle.dir) },
@@ -85,31 +76,27 @@ function chooseBestMove(cycle) {
   ];
 
   let bestMove = moves[0];
-  let maxSafe = -1;
+  let bestScore = -Infinity;
 
   for (let move of moves) {
     let nx = cycle.x + move.vel.dx * gridSize;
     let ny = cycle.y + move.vel.dy * gridSize;
-    let safeSteps = 0;
-    for (let i = 0; i < predictionDepth; i++) {
-      const key = gridKey(nx, ny);
-      if (ownTrail.has(key) || otherTrail.has(key) || nx < 0 || nx > canvas.width || ny < 0 || ny > canvas.height) break;
-      safeSteps++;
-      nx += move.vel.dx * gridSize;
-      ny += move.vel.dy * gridSize;
-    }
-    if (safeSteps > maxSafe) {
-      maxSafe = safeSteps;
+    let key = gridKey(nx, ny);
+    let safe = !(ownTrail.has(key) || otherTrail.has(key) || nx < 0 || nx > canvas.width || ny < 0 || ny > canvas.height);
+    let towardsEnemy = Math.hypot(nx - other.x, ny - other.y);
+    let score = safe ? (1000 - towardsEnemy) : -Infinity;
+
+    if (score > bestScore) {
+      bestScore = score;
       bestMove = move;
     }
   }
-
   return bestMove;
 }
 
 function draw() {
   for (let c of cycles) {
-    const move = chooseBestMove(c);
+    const move = chooseBestAggressiveMove(c);
     c.dir = move.dir;
     c.dx = move.vel.dx;
     c.dy = move.vel.dy;
@@ -118,19 +105,24 @@ function draw() {
     c.y += c.dy * c.speed;
 
     const key = gridKey(c.x, c.y);
-    if (c.trail.has(key) || c.x < 0 || c.x > canvas.width || c.y < 0 || c.y > canvas.height) {
+    const allTrails = cycles.flatMap(cyc => cyc.trail.map(p => gridKey(p.x, p.y)));
+    if (allTrails.includes(key) || c.x < 0 || c.x > canvas.width || c.y < 0 || c.y > canvas.height) {
       resetGame();
       return;
     }
 
-    c.trail.add(key);
+    c.trail.push({x: c.x, y: c.y});
 
     ctx.beginPath();
-    ctx.arc(c.x, c.y, 5, 0, Math.PI * 2);
-    ctx.fillStyle = c.color;
+    ctx.moveTo(c.trail[0].x, c.trail[0].y);
+    for (let i = 1; i < c.trail.length; i++) {
+      ctx.lineTo(c.trail[i].x, c.trail[i].y);
+    }
+    ctx.strokeStyle = c.color;
     ctx.shadowColor = c.color;
     ctx.shadowBlur = 10;
-    ctx.fill();
+    ctx.lineWidth = 6;
+    ctx.stroke();
     ctx.shadowBlur = 0;
   }
 
