@@ -2,38 +2,15 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>EMANARGAMES ULTRA</title>
+  <title>TRON Descanso ULTRA</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body, html { width: 100%; height: 100%; overflow: hidden; background: linear-gradient(135deg, #1e1e1e, #333); }
+    body, html { width: 100%; height: 100%; overflow: hidden; background: #000; }
     canvas { display: block; }
-    .hud {
-      position: absolute; top: 10px; left: 10px; color: #fff; font-family: sans-serif;
-      background: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px;
-    }
-    .center {
-      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      color: #fff; font-family: sans-serif; text-align: center;
-    }
-    button {
-      margin-top: 10px; padding: 10px 20px; border: none; border-radius: 5px;
-      background: #0f0; color: #000; font-weight: bold; cursor: pointer;
-      box-shadow: 0 0 10px #0f0;
-    }
   </style>
 </head>
 <body>
-  <div class="hud">
-    <div>Pontuação: <span id="score">0</span></div>
-    <div>Top Rank:</div>
-    <ol id="rank"></ol>
-  </div>
-  <div class="center" id="start">
-    <h1 id="gameTitle">Carregando...</h1>
-    <button onclick="startGame()">Começar Jogo</button>
-  </div>
-  <canvas id="canvas"></canvas>
+<canvas id="canvas"></canvas>
 
 <script>
 const canvas = document.getElementById('canvas');
@@ -41,367 +18,105 @@ const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-let score = 0;
-let game = null;
-const totalGames = 20;
-let gameIndex = Math.floor(Math.random() * totalGames);
-const gameNames = Array.from({length: totalGames}, (_, i) => `Jogo ${i+1}`);
-
-document.getElementById('gameTitle').innerText = gameNames[gameIndex];
-updateRank();
-
-function updateScore() {
-  document.getElementById('score').innerText = score;
+const beep = new AudioContext();
+function playBeep() {
+  const osc = beep.createOscillator();
+  osc.type = 'square';
+  osc.frequency.value = 440;
+  osc.connect(beep.destination);
+  osc.start();
+  osc.stop(beep.currentTime + 0.1);
 }
 
-function updateRank() {
-  const rankList = JSON.parse(localStorage.getItem('rankList') || '[]');
-  const ol = document.getElementById('rank');
-  ol.innerHTML = '';
-  rankList.sort((a,b)=>b-a).slice(0,3).forEach(s=>{
-    const li = document.createElement('li');
-    li.textContent = s;
-    ol.appendChild(li);
-  });
+const colors = ['#0ff', '#f0f', '#ff0', '#0f0', '#f00', '#00f', '#fff'];
+const cycles = [];
+
+for(let i=0; i<10; i++) {
+  cycles.push(newCycle());
 }
 
-function saveScore() {
-  let rankList = JSON.parse(localStorage.getItem('rankList') || '[]');
-  rankList.push(score);
-  localStorage.setItem('rankList', JSON.stringify(rankList));
+function newCycle() {
+  return {
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    dir: Math.random() * 2 * Math.PI,
+    speed: 2 + Math.random()*3,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    trail: [],
+    alive: true
+  };
 }
 
-function startGame() {
-  document.getElementById('start').style.display = 'none';
-  score = 0;
-  updateScore();
-  game = games[gameIndex];
-  game();
+function drawGlowLine(trail, color) {
+  ctx.beginPath();
+  ctx.moveTo(trail[0].x, trail[0].y);
+  for (let i = 1; i < trail.length; i++) {
+    ctx.lineTo(trail[i].x, trail[i].y);
+  }
+  ctx.strokeStyle = color;
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 10;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.shadowBlur = 0;
 }
 
-const games = [];
-
-  // Jogo 1 - Reflexo rápido
-games.push(function reflexo() {
-  let box = {x: Math.random()*canvas.width, y: Math.random()*canvas.height, size: 50};
-  function draw() {
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.fillStyle = '#0f0';
-    ctx.fillRect(box.x, box.y, box.size, box.size);
+function explode(x, y, color) {
+  for(let i=0; i<20; i++) {
+    let angle = Math.random() * 2 * Math.PI;
+    let speed = Math.random() * 5;
+    particles.push({x, y, dx: Math.cos(angle)*speed, dy: Math.sin(angle)*speed, life: 50, color});
   }
-  canvas.addEventListener('click', function click(e) {
-    if(e.clientX > box.x && e.clientX < box.x+box.size && e.clientY > box.y && e.clientY < box.y+box.size){
-      score++; updateScore();
-      box = {x: Math.random()*canvas.width, y: Math.random()*canvas.height, size: 50};
+}
+
+const particles = [];
+
+function draw() {
+  ctx.fillStyle = 'rgba(0,0,0,0.2)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  cycles.forEach((c, idx) => {
+    if(!c.alive) return;
+
+    c.trail.push({x: c.x, y: c.y});
+    if (c.trail.length > 100) c.trail.shift();
+
+    c.x += Math.cos(c.dir) * c.speed;
+    c.y += Math.sin(c.dir) * c.speed;
+
+    if (Math.random() < 0.02) {
+      c.dir += (Math.random() - 0.5) * Math.PI / 2;
+      playBeep();
+    }
+
+    drawGlowLine(c.trail, c.color);
+
+    if (c.x < 0 || c.x > canvas.width || c.y < 0 || c.y > canvas.height) {
+      explode(c.x, c.y, c.color);
+      c.alive = false;
+      setTimeout(() => { cycles[idx] = newCycle(); }, 1000);
     }
   });
-  function loop(){ draw(); requestAnimationFrame(loop); }
-  loop();
-});
 
-// Jogo 2 - Bolinhas quicando
-games.push(function bolinhas() {
-  let balls = Array.from({length:10},()=>({x:Math.random()*canvas.width,y:Math.random()*canvas.height,dx:Math.random()*4-2,dy:Math.random()*4-2,r:20+Math.random()*20}));
-  function draw() {
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    balls.forEach(b=>{
-      b.x+=b.dx; b.y+=b.dy; b.dy+=0.1;
-      if(b.x<b.r||b.x>canvas.width-b.r)b.dx=-b.dx;
-      if(b.y>canvas.height-b.r){b.dy=-b.dy*0.9; score++; updateScore();}
-      ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,Math.PI*2); ctx.fillStyle = '#0f0'; ctx.fill();
-    });
-    requestAnimationFrame(draw);
-  }
-  draw();
-});
-
-// Jogo 3 - Corrida infinita
-games.push(function corrida() {
-  let player = {x:50, y:canvas.height-50, vy:0}, obstacles=[];
-  function spawn(){ obstacles.push({x:canvas.width,y:canvas.height-50,w:30,h:30}); }
-  setInterval(spawn,1000);
-  document.addEventListener('keydown', e=>{if(e.key===' ')player.vy=-10;});
-  canvas.addEventListener('touchstart',()=>player.vy=-10);
-  function draw(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    player.vy+=0.5; player.y+=player.vy;
-    if(player.y>canvas.height-30)player.y=canvas.height-30;
-    ctx.fillStyle='lime'; ctx.fillRect(player.x,player.y,30,30);
-    obstacles.forEach(o=>{o.x-=5; ctx.fillStyle='red'; ctx.fillRect(o.x,o.y,o.w,o.h); if(o.x<player.x+30&&o.x+o.w>player.x&&o.y<player.y+30)saveScore();});
-    score++; updateScore();
-    requestAnimationFrame(draw);
-  }
-  draw();
-});
-
-// Jogo 4 - Memória
-games.push(function memoria() {
-  let seq = [randColor(),randColor(),randColor()];
-  let playerSeq = [];
-  function randColor(){ return `hsl(${Math.random()*360},100%,50%)`; }
-  function draw(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    seq.forEach((c,i)=>{ctx.fillStyle=c; ctx.fillRect(i*100+50,canvas.height/2,80,80);});
-  }
-  canvas.addEventListener('click',function click(e){
-    let i = Math.floor((e.clientX-50)/100);
-    if(seq[i]){ playerSeq.push(seq[i]); }
-    if(playerSeq.length===seq.length){
-      if(playerSeq.every((c,i)=>c===seq[i])){ score++; updateScore(); seq.push(randColor()); }
-      else { saveScore(); }
-      playerSeq=[];
-    }
+  particles.forEach(p => {
+    p.x += p.dx;
+    p.y += p.dy;
+    p.life--;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 2, 0, Math.PI*2);
+    ctx.fillStyle = p.color;
+    ctx.fill();
   });
-  function loop(){ draw(); requestAnimationFrame(loop); }
-  loop();
-});
-
-// Jogo 5 - Dodge
-games.push(function dodge() {
-  let player = {x:canvas.width/2,y:canvas.height-50,w:50,h:10};
-  let blocks = [];
-  setInterval(()=>blocks.push({x:Math.random()*canvas.width,y:0,w:50,h:10,s:Math.random()*3+2}),1000);
-  document.addEventListener('mousemove', e=>player.x=e.clientX-player.w/2);
-  function draw(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.fillStyle='white'; ctx.fillRect(player.x,player.y,player.w,player.h);
-    blocks.forEach(b=>{b.y+=b.s; ctx.fillStyle='red'; ctx.fillRect(b.x,b.y,b.w,b.h);
-    if(b.y>canvas.height)score++,updateScore();
-    if(b.x<player.x+player.w&&b.x+b.w>player.x&&b.y<player.y+player.h)saveScore();});
-    requestAnimationFrame(draw);
+  
+  for(let i=particles.length-1; i>=0; i--) {
+    if(particles[i].life <= 0) particles.splice(i,1);
   }
-  draw();
-});
 
-// Jogo 6 - Tiro
-games.push(function tiro() {
-  let targets = Array.from({length:5},()=>({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:20}));
-  canvas.addEventListener('click',function shoot(e){
-    targets = targets.filter(t=>Math.hypot(t.x-e.clientX,t.y-e.clientY)>t.r);
-    score++; updateScore();
-    if(targets.length===0)saveScore();
-  });
-  function draw(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    targets.forEach(t=>{ctx.beginPath();ctx.arc(t.x,t.y,t.r,0,Math.PI*2);ctx.fillStyle='cyan';ctx.fill();});
-    requestAnimationFrame(draw);
-  }
-  draw();
-});
+  requestAnimationFrame(draw);
+}
 
-// Jogo 7 - Labirinto
-games.push(function labirinto() {
-  let player = {x:50,y:50,w:20,h:20}, goal = {x:canvas.width-50,y:canvas.height-50,w:30,h:30};
-  document.addEventListener('keydown',e=>{
-    if(e.key==='ArrowUp')player.y-=5;
-    if(e.key==='ArrowDown')player.y+=5;
-    if(e.key==='ArrowLeft')player.x-=5;
-    if(e.key==='ArrowRight')player.x+=5;
-    if(player.x<goal.x+goal.w&&player.x+player.w>goal.x&&player.y<goal.y+goal.h&&player.y+player.h>goal.y){ score+=10; updateScore(); saveScore(); }
-  });
-  function draw(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.fillStyle='lime'; ctx.fillRect(player.x,player.y,player.w,player.h);
-    ctx.fillStyle='gold'; ctx.fillRect(goal.x,goal.y,goal.w,goal.h);
-    requestAnimationFrame(draw);
-  }
-  draw();
-});
+draw();
 
-// Jogo 8 - Flappy
-games.push(function flappy() {
-  let bird = {x:50,y:canvas.height/2,v:0}, pipes = [];
-  setInterval(()=>pipes.push({x:canvas.width,y:Math.random()*canvas.height/2+50,w:50,gap:150}),2000);
-  canvas.addEventListener('click',()=>bird.v=-8);
-  function draw(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    bird.v+=0.5; bird.y+=bird.v;
-    ctx.fillStyle='yellow'; ctx.fillRect(bird.x,bird.y,30,30);
-    pipes.forEach(p=>{
-      p.x-=3;
-      ctx.fillStyle='green'; 
-      ctx.fillRect(p.x,0,p.w,p.y);
-      ctx.fillRect(p.x,p.y+p.gap,p.w,canvas.height);
-      if(bird.x<p.x+p.w&&bird.x+30>p.x&&(bird.y<p.y||bird.y>p.y+p.gap))saveScore();
-    });
-    score++; updateScore();
-    requestAnimationFrame(draw);
-  }
-  draw();
-});
-
-// Jogo 9 - Pong
-games.push(function pong() {
-  let ball = {x:canvas.width/2,y:canvas.height/2,dx:5,dy:5,r:10}, paddle = {x:canvas.width/2-50,y:canvas.height-20,w:100,h:10};
-  document.addEventListener('mousemove', e=>paddle.x=e.clientX-paddle.w/2);
-  function draw(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.fillStyle='white'; ctx.fillRect(paddle.x,paddle.y,paddle.w,paddle.h);
-    ctx.beginPath(); ctx.arc(ball.x,ball.y,ball.r,0,Math.PI*2); ctx.fill();
-    ball.x+=ball.dx; ball.y+=ball.dy;
-    if(ball.x<ball.r||ball.x>canvas.width-ball.r)ball.dx=-ball.dx;
-    if(ball.y<ball.r||ball.y>canvas.height-ball.r)ball.dy=-ball.dy;
-    if(ball.y+ball.r>paddle.y&&ball.x>paddle.x&&ball.x<paddle.x+paddle.w){ ball.dy=-ball.dy; score++; updateScore(); }
-    requestAnimationFrame(draw);
-  }
-  draw();
-});
-
-// Jogo 10 - Estouro de bolhas
-games.push(function bolhas() {
-  let bubbles = Array.from({length:20},()=>({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:20+Math.random()*20}));
-  canvas.addEventListener('click',e=>{
-    bubbles = bubbles.filter(b=>Math.hypot(b.x-e.clientX,b.y-e.clientY)>b.r);
-    score++; updateScore();
-  });
-  function draw(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    bubbles.forEach(b=>{ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.strokeStyle='aqua';ctx.stroke();});
-    requestAnimationFrame(draw);
-  }
-  draw();
-});
-
-  // Jogo 11 - Clicker
-games.push(function clicker() {
-  canvas.addEventListener('click',()=>{ score++; updateScore(); });
-  function draw(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.font='50px sans-serif'; ctx.fillStyle='lime';
-    ctx.fillText('CLIQUE!',canvas.width/2-100,canvas.height/2);
-    requestAnimationFrame(draw);
-  }
-  draw();
-});
-
-// Jogo 12 - Círculos que somem
-games.push(function circulos() {
-  let circles = Array.from({length:10},()=>({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:30}));
-  setInterval(()=>{if(circles.length>0){circles.pop();score++;updateScore();}else{saveScore();}},1000);
-  function draw(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    circles.forEach(c=>{ctx.beginPath();ctx.arc(c.x,c.y,c.r,0,Math.PI*2);ctx.fillStyle='pink';ctx.fill();});
-    requestAnimationFrame(draw);
-  }
-  draw();
-});
-
-// Jogo 13 - Seguir o mouse
-games.push(function seguir() {
-  let follower = {x:canvas.width/2,y:canvas.height/2};
-  document.addEventListener('mousemove',e=>{follower.x=e.clientX;follower.y=e.clientY;score++;updateScore();});
-  function draw(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.beginPath(); ctx.arc(follower.x,follower.y,20,0,Math.PI*2); ctx.fillStyle='magenta'; ctx.fill();
-    requestAnimationFrame(draw);
-  }
-  draw();
-});
-
-// Jogo 14 - Movimento automático
-games.push(function mover() {
-  let obj = {x:0,y:canvas.height/2,s:5};
-  function draw(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    obj.x+=obj.s;
-    if(obj.x>canvas.width){obj.x=0;score++;updateScore();}
-    ctx.fillStyle='orange'; ctx.fillRect(obj.x,obj.y,50,50);
-    requestAnimationFrame(draw);
-  }
-  draw();
-});
-
-// Jogo 15 - Rebata o ponto
-games.push(function rebater() {
-  let ball = {x:50,y:50,dx:4,dy:4,r:10};
-  function draw(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    ball.x+=ball.dx; ball.y+=ball.dy;
-    if(ball.x<ball.r||ball.x>canvas.width-ball.r)ball.dx=-ball.dx;
-    if(ball.y<ball.r||ball.y>canvas.height-ball.r){ ball.dy=-ball.dy; score++; updateScore();}
-    ctx.beginPath(); ctx.arc(ball.x,ball.y,ball.r,0,Math.PI*2); ctx.fillStyle='white'; ctx.fill();
-    requestAnimationFrame(draw);
-  }
-  draw();
-});
-
-// Jogo 16 - Quadrados aleatórios
-games.push(function quadrados() {
-  setInterval(()=>{score++;updateScore();},500);
-  function draw(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    for(let i=0;i<10;i++){
-      ctx.fillStyle=`hsl(${Math.random()*360},100%,50%)`;
-      ctx.fillRect(Math.random()*canvas.width,Math.random()*canvas.height,50,50);
-    }
-    requestAnimationFrame(draw);
-  }
-  draw();
-});
-
-// Jogo 17 - Queda livre
-games.push(function queda() {
-  let obj = {x:canvas.width/2,y:0,s:3};
-  function draw(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    obj.y+=obj.s;
-    if(obj.y>canvas.height){obj.y=0;score++;updateScore();}
-    ctx.fillStyle='cyan'; ctx.fillRect(obj.x,obj.y,30,30);
-    requestAnimationFrame(draw);
-  }
-  draw();
-});
-
-// Jogo 18 - Pulo controlado
-games.push(function pulo() {
-  let player = {x:50,y:canvas.height-50,vy:0};
-  document.addEventListener('keydown',e=>{if(e.key===' ')player.vy=-10;});
-  canvas.addEventListener('click',()=>player.vy=-10);
-  function draw(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    player.vy+=0.5; player.y+=player.vy;
-    if(player.y>canvas.height-30)player.y=canvas.height-30;
-    ctx.fillStyle='white'; ctx.fillRect(player.x,player.y,30,30);
-    requestAnimationFrame(draw);
-  }
-  draw();
-});
-
-// Jogo 19 - Reflexo invertido
-games.push(function reflexoInv() {
-  let c = {x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:30};
-  canvas.addEventListener('click',e=>{
-    if(Math.hypot(c.x-e.clientX,c.y-e.clientY)<c.r){
-      score++; updateScore();
-      c = {x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:30};
-    }
-  });
-  function draw(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.beginPath();ctx.arc(c.x,c.y,c.r,0,Math.PI*2);ctx.strokeStyle='lime';ctx.stroke();
-    requestAnimationFrame(draw);
-  }
-  draw();
-});
-
-// Jogo 20 - Sequência aleatória
-games.push(function sequencia() {
-  let seq = Array.from({length:5},()=>Math.floor(Math.random()*100));
-  let index = 0;
-  canvas.addEventListener('click',()=>{
-    if(index<seq.length){score+=seq[index];updateScore();index++;}
-    else {saveScore();}
-  });
-  function draw(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.font='30px sans-serif';ctx.fillStyle='white';
-    ctx.fillText('Clique p/ somar: '+(seq[index]||'FIM'),canvas.width/2-150,canvas.height/2);
-    requestAnimationFrame(draw);
-  }
-  draw();
-});
-
-// FECHAMENTO FINAL
 window.addEventListener('resize', () => {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
