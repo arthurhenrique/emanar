@@ -43,7 +43,9 @@ function directionToVelocity(dir) {
 }
 
 function resetGame() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  cycles = [];
+  ctx.fillStyle = "#000";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
   cycles = [newCycle(colors[0]), newCycle(colors[1])];
 }
 
@@ -96,7 +98,7 @@ function chooseBestAggressiveMove(cycle, predictionDepth) {
 function draw() {
   for (let i = 0; i < cycles.length; i++) {
     const c = cycles[i];
-    const predictionDepth = i === 0 ? 10 : 3;  // Moto 1 mais inteligente
+    const predictionDepth = i === 0 ? 10 : 3;
 
     const move = chooseBestAggressiveMove(c, predictionDepth);
     c.dir = move.dir;
@@ -123,7 +125,7 @@ function draw() {
     ctx.strokeStyle = c.color;
     ctx.shadowColor = c.color;
     ctx.shadowBlur = 2;
-    ctx.lineWidth = 4;
+    ctx.lineWidth = 6;
     ctx.stroke();
     ctx.shadowBlur = 0;
   }
