@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>TRON Raiz - Só 90°</title>
+  <title>TRON HARDCORE - Só 90°</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body, html { width: 100%; height: 100%; overflow: hidden; background: #000; }
@@ -18,16 +18,6 @@ const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-const beep = new AudioContext();
-function playBeep() {
-  const osc = beep.createOscillator();
-  osc.type = 'square';
-  osc.frequency.value = 440;
-  osc.connect(beep.destination);
-  osc.start();
-  osc.stop(beep.currentTime + 0.05);
-}
-
 const colors = ['#0ff', '#f0f', '#ff0', '#0f0', '#f00', '#00f', '#fff'];
 const cycles = [];
 
@@ -37,81 +27,51 @@ for(let i=0; i<10; i++) {
 
 function newCycle() {
   return {
-    x: Math.random() * canvas.width,
-    y: Math.random() * canvas.height,
-    dir: Math.floor(Math.random() * 4) * Math.PI/2,
-    speed: 2,
+    x: Math.floor(Math.random() * canvas.width),
+    y: Math.floor(Math.random() * canvas.height),
+    dir: Math.floor(Math.random() * 4) * 90, // só 0,90,180,270
+    speed: 5,
     color: colors[Math.floor(Math.random() * colors.length)],
-    trail: [],
+    segments: [{x: 0, y: 0}],
     alive: true
   };
 }
 
-function drawGlowLine(trail, color) {
-  ctx.beginPath();
-  ctx.moveTo(trail[0].x, trail[0].y);
-  for (let i = 1; i < trail.length; i++) {
-    ctx.lineTo(trail[i].x, trail[i].y);
-  }
-  ctx.strokeStyle = color;
-  ctx.shadowColor = color;
-  ctx.shadowBlur = 10;
-  ctx.lineWidth = 2;
-  ctx.stroke();
-  ctx.shadowBlur = 0;
-}
-
-function explode(x, y, color) {
-  for(let i=0; i<20; i++) {
-    let angle = Math.random() * 2 * Math.PI;
-    let speed = Math.random() * 5;
-    particles.push({x, y, dx: Math.cos(angle)*speed, dy: Math.sin(angle)*speed, life: 50, color});
-  }
-}
-
-const particles = [];
-
 function draw() {
-  ctx.fillStyle = 'rgba(0,0,0,0.2)';
+  ctx.fillStyle = 'rgba(0,0,0,0.1)';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   cycles.forEach((c, idx) => {
     if(!c.alive) return;
 
-    c.trail.push({x: c.x, y: c.y});
-    if (c.trail.length > 100) c.trail.shift();
+    let radians = c.dir * Math.PI / 180;
+    c.x += Math.cos(radians) * c.speed;
+    c.y += Math.sin(radians) * c.speed;
 
-    c.x += Math.cos(c.dir) * c.speed;
-    c.y += Math.sin(c.dir) * c.speed;
+    c.segments.push({x: c.x, y: c.y});
+    if (c.segments.length > 50) c.segments.shift();
+
+    ctx.beginPath();
+    ctx.moveTo(c.segments[0].x, c.segments[0].y);
+    for(let i=1; i<c.segments.length; i++) {
+      ctx.lineTo(c.segments[i].x, c.segments[i].y);
+    }
+    ctx.strokeStyle = c.color;
+    ctx.shadowColor = c.color;
+    ctx.shadowBlur = 10;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
 
     if (Math.random() < 0.02) {
-      // Só vira 90 graus: + ou - PI/2
-      c.dir += (Math.random() > 0.5 ? 1 : -1) * Math.PI / 2;
-      playBeep();
+      c.dir += Math.random() > 0.5 ? 90 : -90;
+      c.dir = (c.dir + 360) % 360;
     }
-
-    drawGlowLine(c.trail, c.color);
 
     if (c.x < 0 || c.x > canvas.width || c.y < 0 || c.y > canvas.height) {
-      explode(c.x, c.y, c.color);
-      c.alive = false;
-      setTimeout(() => { cycles[idx] = newCycle(); }, 1000);
+      cycles[idx] = newCycle();
     }
   });
-
-  particles.forEach(p => {
-    p.x += p.dx;
-    p.y += p.dy;
-    p.life--;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, 2, 0, Math.PI*2);
-    ctx.fillStyle = p.color;
-    ctx.fill();
-  });
-  
-  for(let i=particles.length-1; i>=0; i--) {
-    if(particles[i].life <= 0) particles.splice(i,1);
-  }
 
   requestAnimationFrame(draw);
 }
