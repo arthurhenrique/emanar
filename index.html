@@ -19,6 +19,7 @@ canvas.height = window.innerHeight;
 
 const colors = ['#0ff', '#f80'];
 let cycles = [];
+let resetTimeout = null;
 
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 function playCollisionSound() {
@@ -30,9 +31,13 @@ function playCollisionSound() {
   osc.stop(audioCtx.currentTime + 0.1);
 }
 
-function newCycle(color) {
-  let x = Math.floor(Math.random() * canvas.width);
-  let y = Math.floor(Math.random() * canvas.height);
+function newCycle(color, avoidX, avoidY) {
+  let x, y;
+  do {
+    x = Math.floor(Math.random() * canvas.width);
+    y = Math.floor(Math.random() * canvas.height);
+  } while (avoidX !== undefined && Math.abs(x - avoidX) < 50 && Math.abs(y - avoidY) < 50);
+  
   let dir = Math.floor(Math.random() * 4) * 90;
   let velocity = directionToVelocity(dir);
   return {
@@ -57,8 +62,11 @@ function directionToVelocity(dir) {
 }
 
 function resetGame() {
+  clearTimeout(resetTimeout);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  cycles = [newCycle(colors[0]), newCycle(colors[1])];
+  let c1 = newCycle(colors[0]);
+  let c2 = newCycle(colors[1], c1.x, c1.y);
+  cycles = [c1, c2];
 }
 
 function checkCollision(cycle) {
@@ -73,8 +81,37 @@ function checkCollision(cycle) {
   return false;
 }
 
+function lookAhead(cycle) {
+  let futureX = cycle.x + cycle.dx * cycle.speed;
+  let futureY = cycle.y + cycle.dy * cycle.speed;
+
+  if (futureX < 0 || futureX > canvas.width || futureY < 0 || futureY > canvas.height) return true;
+  
+  for (let point of cycle.trail) {
+    if (point.x === futureX && point.y === futureY) return true;
+  }
+  
+  let other = cycles.find(c => c !== cycle);
+  for (let point of other.trail) {
+    if (point.x === futureX && point.y === futureY) return true;
+  }
+  
+  return false;
+}
+
+function avoidCollision(cycle) {
+  if (lookAhead(cycle)) {
+    cycle.dir += Math.random() > 0.5 ? 90 : -90;
+    cycle.dir = (cycle.dir + 360) % 360;
+    let vel = directionToVelocity(cycle.dir);
+    cycle.dx = vel.dx;
+    cycle.dy = vel.dy;
+  }
+}
+
 function draw() {
   for (let c of cycles) {
+    avoidCollision(c);
     c.x += c.dx * c.speed;
     c.y += c.dy * c.speed;
     c.trail.push({x: c.x, y: c.y});
@@ -91,17 +128,9 @@ function draw() {
     ctx.stroke();
     ctx.shadowBlur = 0;
 
-    if (Math.random() < 0.05) {
-      c.dir += Math.random() > 0.5 ? 90 : -90;
-      c.dir = (c.dir + 360) % 360;
-      let vel = directionToVelocity(c.dir);
-      c.dx = vel.dx;
-      c.dy = vel.dy;
-    }
-
     if (checkCollision(c)) {
       playCollisionSound();
-      resetGame();
+      resetTimeout = setTimeout(resetGame, 1000);
       return;
     }
   }
