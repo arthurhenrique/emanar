@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home Divertida com Física</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #222;
+    }
+    canvas {
+      display: block;
+    }
+    h1 {
+      position: absolute;
+      top: 20px;
+      width: 100%;
+      text-align: center;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      z-index: 10;
+    }
+    .info {
+      position: absolute;
+      bottom: 20px;
+      width: 100%;
+      text-align: center;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+  <h1>Bem-vindo à Home Divertida!</h1>
+  <div class="info">Clique para adicionar bolinhas. Use ↑ e ↓ para ajustar a gravidade.</div>
+  <canvas id="canvas"></canvas>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    let gravity = 0.5;
+    const friction = 0.9;
+
+    class Ball {
+      constructor(x, y, dx, dy, radius, color) {
+        this.x = x;
+        this.y = y;
+        this.dx = dx;
+        this.dy = dy;
+        this.radius = radius;
+        this.color = color;
+      }
+
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+        ctx.closePath();
+      }
+
+      update() {
+        if (this.y + this.radius + this.dy > canvas.height) {
+          this.dy = -this.dy * friction;
+        } else {
+          this.dy += gravity;
+        }
+
+        if (this.x + this.radius + this.dx > canvas.width || this.x - this.radius <= 0) {
+          this.dx = -this.dx * friction;
+        }
+
+        this.x += this.dx;
+        this.y += this.dy;
+
+        this.draw();
+      }
+    }
+
+    class ExplosionText {
+      constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.opacity = 1;
+        this.size = 20;
+      }
+
+      draw() {
+        ctx.font = `${this.size}px Arial`;
+        ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+        ctx.fillText('emanartech', this.x, this.y);
+      }
+
+      update() {
+        this.y -= 1;            // sobe
+        this.opacity -= 0.02;   // vai sumindo
+        this.size += 0.5;       // aumenta
+        this.draw();
+      }
+    }
+
+    let balls = [];
+    let explosions = [];
+
+    function createBall(x, y) {
+      let radius = Math.random() * 30 + 10;
+      let dx = (Math.random() - 0.5) * 8;
+      let dy = (Math.random() - 0.5) * 8;
+      let color = `hsl(${Math.random() * 360}, 70%, 50%)`;
+      balls.push(new Ball(x, y, dx, dy, radius, color));
+    }
+
+    for (let i = 0; i < 20; i++) {
+      createBall(Math.random() * canvas.width, Math.random() * canvas.height);
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      balls.forEach(ball => ball.update());
+      explosions = explosions.filter(explosion => explosion.opacity > 0);
+      explosions.forEach(explosion => explosion.update());
+    }
+
+    animate();
+
+    canvas.addEventListener('click', (e) => {
+      createBall(e.clientX, e.clientY);
+      explosions.push(new ExplosionText(e.clientX, e.clientY));
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowUp') {
+        gravity += 0.1;
+      } else if (e.key === 'ArrowDown') {
+        gravity = Math.max(0, gravity - 0.1);
+      }
+    });
+
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+  </script>
+</body>
+</html>
