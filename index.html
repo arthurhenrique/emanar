@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>TRON HARDCORE - Só 90°</title>
+  <title>TRON HARDCORE CORRIGIDO</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body, html { width: 100%; height: 100%; overflow: hidden; background: #000; }
@@ -26,15 +26,28 @@ for(let i=0; i<10; i++) {
 }
 
 function newCycle() {
+  let dir = Math.floor(Math.random() * 4) * 90;
+  let velocity = directionToVelocity(dir);
   return {
     x: Math.floor(Math.random() * canvas.width),
     y: Math.floor(Math.random() * canvas.height),
-    dir: Math.floor(Math.random() * 4) * 90, // só 0,90,180,270
+    dir: dir,
+    dx: velocity.dx,
+    dy: velocity.dy,
     speed: 5,
     color: colors[Math.floor(Math.random() * colors.length)],
     segments: [{x: 0, y: 0}],
     alive: true
   };
+}
+
+function directionToVelocity(dir) {
+  switch(dir) {
+    case 0: return {dx: 1, dy: 0};
+    case 90: return {dx: 0, dy: 1};
+    case 180: return {dx: -1, dy: 0};
+    case 270: return {dx: 0, dy: -1};
+  }
 }
 
 function draw() {
@@ -44,9 +57,8 @@ function draw() {
   cycles.forEach((c, idx) => {
     if(!c.alive) return;
 
-    let radians = c.dir * Math.PI / 180;
-    c.x += Math.cos(radians) * c.speed;
-    c.y += Math.sin(radians) * c.speed;
+    c.x += c.dx * c.speed;
+    c.y += c.dy * c.speed;
 
     c.segments.push({x: c.x, y: c.y});
     if (c.segments.length > 50) c.segments.shift();
@@ -63,9 +75,12 @@ function draw() {
     ctx.stroke();
     ctx.shadowBlur = 0;
 
-    if (Math.random() < 0.02) {
+    if (Math.random() < 0.05) {  // aumentei pra virar mais
       c.dir += Math.random() > 0.5 ? 90 : -90;
       c.dir = (c.dir + 360) % 360;
+      const vel = directionToVelocity(c.dir);
+      c.dx = vel.dx;
+      c.dy = vel.dy;
     }
 
     if (c.x < 0 || c.x > canvas.width || c.y < 0 || c.y > canvas.height) {
