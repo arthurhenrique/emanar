@@ -2,109 +2,152 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Emanar - Soluções em Tecnologia</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Emanar - Soluções Tech</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
+    :root {
+      --fundo: #f9f9f9;
+      --verde-menta: #c6f1e7;
+      --verde-escuro: #2e7d67;
+      --areia: #f4f1ee;
+      --cinza: #999;
+      --texto: #222;
+    }
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
     body {
-      font-family: Arial, sans-serif;
-      background-color: #f9f9f9;
-      color: #333;
+      font-family: 'Inter', sans-serif;
+      background-color: var(--fundo);
+      color: var(--texto);
       line-height: 1.6;
     }
     header {
-      background-color: #0077cc;
-      color: #fff;
-      padding: 20px 0;
+      background: var(--areia);
+      padding: 30px 20px;
       text-align: center;
+      border-bottom: 1px solid #eee;
     }
     header img {
-      width: 120px;
-      margin-bottom: 10px;
+      width: 340px;
     }
-    .container {
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-    .intro {
+    .hero {
+      padding: 100px 20px;
       text-align: center;
-      margin-bottom: 40px;
+      background: var(--verde-menta);
+      border-radius: 20px;
+      margin: 40px auto;
+      max-width: 900px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
     }
-    .intro h1 {
-      font-size: 2.5em;
-      margin-bottom: 10px;
+    .hero h2 {
+      font-size: 2em;
+      margin-bottom: 20px;
+      font-weight: 600;
     }
-    .intro p {
-      font-size: 1.2em;
-      color: #555;
+    .hero p {
+      font-size: 1.1em;
+      max-width: 600px;
+      margin: 0 auto;
+      color: var(--texto);
     }
-    .contact {
-      background: #fff;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      margin-bottom: 40px;
+    .cta {
+      display: inline-block;
+      margin-top: 30px;
+      padding: 12px 30px;
+      background: var(--areia);
+      color: var(--texto);
+      text-decoration: none;
+      border-radius: 30px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      font-weight: 600;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
-    .contact h2 {
-      margin-bottom: 15px;
-      color: #0077cc;
+    .cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.1);
     }
-    .contact p {
-      margin-bottom: 10px;
+    .about, .contact {
+      padding: 60px 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .about h3, .contact h3 {
+      font-size: 1.6em;
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+    .about p {
+      color: var(--texto);
     }
     .contact a {
-      color: #0077cc;
+      display: inline-flex;
+      align-items: center;
+      margin: 10px 15px;
       text-decoration: none;
+      color: var(--texto);
+      font-weight: 500;
+      transition: color 0.3s;
+    }
+    .contact a i {
+      margin-right: 10px;
+      color: var(--verde-escuro);
     }
     .contact a:hover {
-      text-decoration: underline;
+      color: var(--cinza);
     }
     footer {
-      background-color: #0077cc;
-      color: #fff;
+      background: var(--areia);
+      padding: 20px;
       text-align: center;
-      padding: 15px 0;
-    }
-    @media (max-width: 600px) {
-      .intro h1 {
-        font-size: 1.8em;
-      }
-      .contact {
-        padding: 15px;
-      }
+      font-size: 0.9em;
+      color: var(--cinza);
+      border-top: 1px solid #eee;
+      margin-top: 40px;
     }
   </style>
 </head>
 <body>
 
   <header>
-    <img src="../assets/emanar_logo.png" alt="Emanar Logo">
-    <h1>Emanar</h1>
-    <p>Soluções em Tecnologia e Integração de APIs</p>
+    <img src="./assets/emanar_logo.png" alt="Emanar Logo">
   </header>
 
-  <div class="container">
-    <section class="intro">
-      <h1>Bem-vindo ao Emanar</h1>
-      <p>Conectamos sistemas, automatizamos processos e entregamos soluções que potencializam seu negócio.</p>
-    </section>
+  <section class="hero">
+    <h2>Soluções Tecnológicas Inovadoras</h2>
+    <p>Conectamos sistemas, automatizamos processos e entregamos soluções robustas e seguras para o seu negócio crescer.</p>
+    <a href="#contact" class="cta">Fale Conosco</a>
+  </section>
 
-    <section class="contact">
-      <h2>Contato</h2>
-      <p><strong>Email:</strong> <a href="mailto:arthur@emanar.com.br">arthur393@gmail.com.com.br</a></p>
-      <p><strong>WhatsApp:</strong> <a href="https://wa.me/5513996881745" target="_blank">+55 13 99688 1745</a></p>
-      <p><strong>GitHub:</strong> <a href="https://github.com/arthurhenrique" target="_blank">github.com/arthurhenrique</a></p>
-    </section>
-  </div>
+  <section class="about">
+    <h3>Quem Somos</h3>
+    <p>Na Emanar, combinamos tecnologia de ponta com expertise em integração de APIs, automação de processos e desenvolvimento de sistemas escaláveis. Nosso objetivo é potencializar sua empresa através de soluções inteligentes e sob medida.</p>
+  </section>
+
+  <section class="contact" id="contact">
+    <h3>Contato</h3>
+    <a href="mailto:arthur393@gmail.com.com.br">
+      <i class="fas fa-envelope"></i> arthur393@gmail.com.com.br
+    </a>
+    <a href="https://wa.me/5513996881745" target="_blank">
+      <i class="fab fa-whatsapp"></i> +55 13 99688-1745
+    </a>
+    <a href="https://github.com/arthurhenrique" target="_blank">
+      <i class="fab fa-github"></i> github.com/arthurhenrique
+    </a>
+  </section>
 
   <footer>
-    <p>&copy; 2025 Emanar. Todos os direitos reservados.</p>
+    &copy; <span id="year"></span> Emanar. Todos os direitos reservados.
   </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
 
 </body>
 </html>
