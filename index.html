@@ -20,7 +20,6 @@ canvas.height = window.innerHeight;
 const colors = ['#0ff', '#f80'];
 let cycles = [];
 const gridSize = 10;
-const predictionDepth = 10;
 
 function gridKey(x, y) {
   return `${Math.floor(x / gridSize)},${Math.floor(y / gridSize)}`;
@@ -48,13 +47,13 @@ function resetGame() {
   cycles = [newCycle(colors[0]), newCycle(colors[1])];
 }
 
-function predictTrail(cycle) {
+function predictTrail(cycle, depth) {
   let trail = new Set(cycle.trail.map(p => gridKey(p.x, p.y)));
   let x = cycle.x;
   let y = cycle.y;
   let dir = cycle.dir;
 
-  for (let i = 0; i < predictionDepth; i++) {
+  for (let i = 0; i < depth; i++) {
     const vel = directionToVelocity(dir);
     x += vel.dx * gridSize;
     y += vel.dy * gridSize;
@@ -64,10 +63,10 @@ function predictTrail(cycle) {
   return trail;
 }
 
-function chooseBestAggressiveMove(cycle) {
+function chooseBestAggressiveMove(cycle, predictionDepth) {
   const other = cycles.find(c => c !== cycle);
   const ownTrail = new Set(cycle.trail.map(p => gridKey(p.x, p.y)));
-  const otherTrail = predictTrail(other);
+  const otherTrail = predictTrail(other, predictionDepth);
 
   const moves = [
     { dir: cycle.dir, vel: directionToVelocity(cycle.dir) },
@@ -95,8 +94,11 @@ function chooseBestAggressiveMove(cycle) {
 }
 
 function draw() {
-  for (let c of cycles) {
-    const move = chooseBestAggressiveMove(c);
+  for (let i = 0; i < cycles.length; i++) {
+    const c = cycles[i];
+    const predictionDepth = i === 0 ? 10 : 3;  // Moto 1 mais inteligente
+
+    const move = chooseBestAggressiveMove(c, predictionDepth);
     c.dir = move.dir;
     c.dx = move.vel.dx;
     c.dy = move.vel.dy;
@@ -115,13 +117,13 @@ function draw() {
 
     ctx.beginPath();
     ctx.moveTo(c.trail[0].x, c.trail[0].y);
-    for (let i = 1; i < c.trail.length; i++) {
-      ctx.lineTo(c.trail[i].x, c.trail[i].y);
+    for (let j = 1; j < c.trail.length; j++) {
+      ctx.lineTo(c.trail[j].x, c.trail[j].y);
     }
     ctx.strokeStyle = c.color;
     ctx.shadowColor = c.color;
-    ctx.shadowBlur = 1;
-    ctx.lineWidth = 3;
+    ctx.shadowBlur = 2;
+    ctx.lineWidth = 4;
     ctx.stroke();
     ctx.shadowBlur = 0;
   }
