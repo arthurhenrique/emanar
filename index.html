@@ -14,15 +14,6 @@
     canvas {
       display: block;
     }
-    h1 {
-      position: absolute;
-      top: 20px;
-      width: 100%;
-      text-align: center;
-      color: #fff;
-      font-family: Arial, sans-serif;
-      z-index: 10;
-    }
     .info {
       position: absolute;
       bottom: 20px;
@@ -35,8 +26,7 @@
   </style>
 </head>
 <body>
-  <h1>Bem-vindo à Home Divertida!</h1>
-  <div class="info">Clique para adicionar bolinhas. Use ↑ e ↓ para ajustar a gravidade.</div>
+  <div class="info">Incline o celular para mexer as bolinhas. Clique para adicionar mais!</div>
   <canvas id="canvas"></canvas>
 
   <script>
@@ -46,7 +36,8 @@
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    let gravity = 0.5;
+    let gravityX = 0;
+    let gravityY = 0.5;
     const friction = 0.9;
 
     class Ball {
@@ -68,14 +59,16 @@
       }
 
       update() {
-        if (this.y + this.radius + this.dy > canvas.height) {
+        if (this.y + this.radius + this.dy > canvas.height || this.y - this.radius + this.dy < 0) {
           this.dy = -this.dy * friction;
         } else {
-          this.dy += gravity;
+          this.dy += gravityY;
         }
 
-        if (this.x + this.radius + this.dx > canvas.width || this.x - this.radius <= 0) {
+        if (this.x + this.radius + this.dx > canvas.width || this.x - this.radius + this.dx < 0) {
           this.dx = -this.dx * friction;
+        } else {
+          this.dx += gravityX;
         }
 
         this.x += this.dx;
@@ -100,9 +93,9 @@
       }
 
       update() {
-        this.y -= 1;            // sobe
-        this.opacity -= 0.02;   // vai sumindo
-        this.size += 0.5;       // aumenta
+        this.y -= 1;
+        this.opacity -= 0.02;
+        this.size += 0.5;
         this.draw();
       }
     }
@@ -110,11 +103,17 @@
     let balls = [];
     let explosions = [];
 
+    function randomGreenWhite() {
+      return Math.random() > 0.5 ? 
+        `rgb(${Math.floor(Math.random()*50)}, ${Math.floor(150 + Math.random()*100)}, ${Math.floor(Math.random()*50)})` : 
+        '#ffffff';
+    }
+
     function createBall(x, y) {
       let radius = Math.random() * 30 + 10;
       let dx = (Math.random() - 0.5) * 8;
       let dy = (Math.random() - 0.5) * 8;
-      let color = `hsl(${Math.random() * 360}, 70%, 50%)`;
+      let color = randomGreenWhite();
       balls.push(new Ball(x, y, dx, dy, radius, color));
     }
 
@@ -137,18 +136,18 @@
       explosions.push(new ExplosionText(e.clientX, e.clientY));
     });
 
-    window.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowUp') {
-        gravity += 0.1;
-      } else if (e.key === 'ArrowDown') {
-        gravity = Math.max(0, gravity - 0.1);
-      }
-    });
-
     window.addEventListener('resize', () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
     });
+
+    // Acelerômetro
+    if (window.DeviceMotionEvent) {
+      window.addEventListener('devicemotion', function(event) {
+        gravityX = event.accelerationIncludingGravity.x / 10;
+        gravityY = event.accelerationIncludingGravity.y / 10;
+      });
+    }
   </script>
 </body>
 </html>
