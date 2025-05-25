@@ -2,151 +2,178 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Home Divertida com Física</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mini Jogos Aleatórios</title>
   <style>
-    body, html {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      background: #222;
-    }
-    canvas {
-      display: block;
-    }
+    body, html { margin: 0; padding: 0; overflow: hidden; background: #111; }
+    canvas { display: block; }
     .info {
-      position: absolute;
-      bottom: 20px;
-      width: 100%;
-      text-align: center;
-      color: #fff;
-      font-family: Arial, sans-serif;
+      position: absolute; bottom: 20px; width: 100%;
+      text-align: center; color: #fff; font-family: Arial, sans-serif;
       z-index: 10;
     }
   </style>
 </head>
 <body>
-  <div class="info">Incline o celular para mexer as bolinhas. Clique para adicionar mais!</div>
+  <div class="info">Recarregue a página para outro jogo!</div>
   <canvas id="canvas"></canvas>
-
   <script>
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
-
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    let gravityX = 0;
-    let gravityY = 0.5;
-    const friction = 0.9;
+    const game = Math.floor(Math.random() * 5);
+    console.log('Jogo:', game);
 
-    class Ball {
-      constructor(x, y, dx, dy, radius, color) {
-        this.x = x;
-        this.y = y;
-        this.dx = dx;
-        this.dy = dy;
-        this.radius = radius;
-        this.color = color;
-      }
+    if (game === 0) bolinhasFisica();
+    if (game === 1) cacaAoClique();
+    if (game === 2) snake();
+    if (game === 3) desviar();
+    if (game === 4) pulo();
 
-      draw() {
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
-        ctx.fillStyle = this.color;
-        ctx.fill();
-        ctx.closePath();
-      }
-
-      update() {
-        if (this.y + this.radius + this.dy > canvas.height || this.y - this.radius + this.dy < 0) {
-          this.dy = -this.dy * friction;
-        } else {
-          this.dy += gravityY;
+    function bolinhasFisica() {
+      let gravity = 0.5, friction = 0.9;
+      class Ball {
+        constructor() {
+          this.r = Math.random() * 30 + 10;
+          this.x = Math.random() * canvas.width;
+          this.y = Math.random() * canvas.height;
+          this.dx = (Math.random() - 0.5) * 8;
+          this.dy = (Math.random() - 0.5) * 8;
+          this.color = `rgb(${Math.random()*50},${150+Math.random()*100},${Math.random()*50})`;
         }
-
-        if (this.x + this.radius + this.dx > canvas.width || this.x - this.radius + this.dx < 0) {
-          this.dx = -this.dx * friction;
-        } else {
-          this.dx += gravityX;
+        draw() {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.r, 0, Math.PI*2);
+          ctx.fillStyle = this.color;
+          ctx.fill();
         }
-
-        this.x += this.dx;
-        this.y += this.dy;
-
-        this.draw();
+        update() {
+          if (this.y + this.r + this.dy > canvas.height) this.dy = -this.dy * friction;
+          else this.dy += gravity;
+          if (this.x + this.r + this.dx > canvas.width || this.x - this.r + this.dx < 0) this.dx = -this.dx * friction;
+          this.x += this.dx; this.y += this.dy;
+          this.draw();
+        }
       }
-    }
-
-    class ExplosionText {
-      constructor(x, y) {
-        this.x = x;
-        this.y = y;
-        this.opacity = 1;
-        this.size = 20;
+      let balls = Array.from({length:20}, ()=> new Ball());
+      canvas.addEventListener('click', e => balls.push(new Ball()));
+      function animate() {
+        requestAnimationFrame(animate);
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        balls.forEach(b=>b.update());
       }
+      animate();
+    }
 
-      draw() {
-        ctx.font = `${this.size}px Arial`;
-        ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
-        ctx.fillText('emanartech', this.x, this.y);
+    function cacaAoClique() {
+      let circles = [];
+      function createCircle() {
+        return { x: Math.random() * canvas.width, y: Math.random() * canvas.height, r: 30, life: 100 };
       }
-
-      update() {
-        this.y -= 1;
-        this.opacity -= 0.02;
-        this.size += 0.5;
-        this.draw();
+      function draw() {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        circles.forEach(c => {
+          ctx.beginPath();
+          ctx.arc(c.x, c.y, c.r, 0, Math.PI*2);
+          ctx.fillStyle = 'green';
+          ctx.fill();
+          c.life -= 1;
+        });
+        circles = circles.filter(c => c.life > 0);
       }
-    }
-
-    let balls = [];
-    let explosions = [];
-
-    function randomGreenWhite() {
-      return Math.random() > 0.5 ? 
-        `rgb(${Math.floor(Math.random()*50)}, ${Math.floor(150 + Math.random()*100)}, ${Math.floor(Math.random()*50)})` : 
-        '#ffffff';
-    }
-
-    function createBall(x, y) {
-      let radius = Math.random() * 30 + 10;
-      let dx = (Math.random() - 0.5) * 8;
-      let dy = (Math.random() - 0.5) * 8;
-      let color = randomGreenWhite();
-      balls.push(new Ball(x, y, dx, dy, radius, color));
-    }
-
-    for (let i = 0; i < 20; i++) {
-      createBall(Math.random() * canvas.width, Math.random() * canvas.height);
-    }
-
-    function animate() {
-      requestAnimationFrame(animate);
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      balls.forEach(ball => ball.update());
-      explosions = explosions.filter(explosion => explosion.opacity > 0);
-      explosions.forEach(explosion => explosion.update());
-    }
-
-    animate();
-
-    canvas.addEventListener('click', (e) => {
-      createBall(e.clientX, e.clientY);
-      explosions.push(new ExplosionText(e.clientX, e.clientY));
-    });
-
-    window.addEventListener('resize', () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    });
-
-    // Acelerômetro
-    if (window.DeviceMotionEvent) {
-      window.addEventListener('devicemotion', function(event) {
-        gravityX = event.accelerationIncludingGravity.x / 10;
-        gravityY = event.accelerationIncludingGravity.y / 10;
+      canvas.addEventListener('click', e => {
+        circles = circles.filter(c => {
+          const dist = Math.hypot(c.x - e.clientX, c.y - e.clientY);
+          return dist > c.r;
+        });
       });
+      setInterval(() => circles.push(createCircle()), 1000);
+      function animate() { requestAnimationFrame(animate); draw(); }
+      animate();
+    }
+
+    function snake() {
+      let size = 20, snake = [{x:5,y:5}], dir = {x:1,y:0}, food = {x:10,y:10};
+      document.addEventListener('keydown', e => {
+        if (e.key==='ArrowUp') dir={x:0,y:-1};
+        if (e.key==='ArrowDown') dir={x:0,y:1};
+        if (e.key==='ArrowLeft') dir={x:-1,y:0};
+        if (e.key==='ArrowRight') dir={x:1,y:0};
+      });
+      canvas.addEventListener('touchstart', e => {
+        const touchX = e.touches[0].clientX;
+        if (touchX < canvas.width/2) dir = {x:-1, y:0};
+        else dir = {x:1, y:0};
+      });
+      function draw() {
+        ctx.fillStyle = '#000'; ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle = 'lime';
+        snake.forEach(s => ctx.fillRect(s.x*size, s.y*size, size, size));
+        ctx.fillStyle = 'red';
+        ctx.fillRect(food.x*size, food.y*size, size, size);
+      }
+      function update() {
+        let head = {x: snake[0].x + dir.x, y: snake[0].y + dir.y};
+        if (head.x === food.x && head.y === food.y) {
+          food = { x: Math.floor(Math.random()*canvas.width/size), y: Math.floor(Math.random()*canvas.height/size) };
+        } else {
+          snake.pop();
+        }
+        if (head.x < 0 || head.y < 0 || head.x*size > canvas.width || head.y*size > canvas.height) snake = [{x:5,y:5}];
+        snake.unshift(head);
+      }
+      function gameLoop() { update(); draw(); }
+      setInterval(gameLoop, 150);
+    }
+
+    function desviar() {
+      let player = {x: canvas.width/2, y: canvas.height - 30, w:50, h:10};
+      let blocks = [];
+      function createBlock() {
+        return { x: Math.random()*canvas.width, y: 0, w:50, h:10, speed: Math.random()*3+2 };
+      }
+      setInterval(() => blocks.push(createBlock()), 1000);
+      function draw() {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle = 'white';
+        ctx.fillRect(player.x, player.y, player.w, player.h);
+        blocks.forEach(b => {
+          b.y += b.speed;
+          ctx.fillStyle = 'red';
+          ctx.fillRect(b.x, b.y, b.w, b.h);
+        });
+      }
+      canvas.addEventListener('touchmove', e => {
+        player.x = e.touches[0].clientX - player.w/2;
+      });
+      canvas.addEventListener('mousemove', e => player.x = e.clientX - player.w/2);
+      function animate() { requestAnimationFrame(animate); draw(); }
+      animate();
+    }
+
+    function pulo() {
+      let player = {x:50, y:canvas.height-50, vy:0, w:30, h:30, jumping:false};
+      let obs = {x:canvas.width, y:canvas.height-50, w:30, h:30, speed:5};
+      document.addEventListener('keydown', e => { if (e.key===' '){ player.jumping=true; }});
+      canvas.addEventListener('touchstart', () => player.jumping = true);
+      function draw() {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle = 'white';
+        ctx.fillRect(player.x, player.y, player.w, player.h);
+        ctx.fillStyle = 'red';
+        ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
+      }
+      function update() {
+        if (player.jumping) { player.vy = -10; player.jumping = false; }
+        player.vy += 0.5; player.y += player.vy;
+        if (player.y > canvas.height - player.h) { player.y = canvas.height - player.h; player.vy = 0; }
+        obs.x -= obs.speed;
+        if (obs.x < -obs.w) obs.x = canvas.width + Math.random()*200;
+      }
+      function animate() { update(); draw(); requestAnimationFrame(animate); }
+      animate();
     }
   </script>
 </body>
