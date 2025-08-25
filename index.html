@@ -3,151 +3,688 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Emanar - Soluções Tech</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <title>Emanar - Integração de APIs, Automação e IA | Soluções Tech Corporativas</title>
+  <meta name="description" content="Especialistas em integração de APIs, automação de processos e soluções com IA. Transformamos negócios através de tecnologia escalável e segura. 10+ anos de experiência.">
+  <meta name="keywords" content="integração APIs, automação processos, inteligência artificial, desenvolvimento sistemas, Node.js, Python, Java, Golang, Docker, Kubernetes">
+  <meta name="author" content="Emanar Soluções Tecnológicas">
+  <meta name="robots" content="index, follow">
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://emanar.tech/">
+  <meta property="og:title" content="Emanar - Soluções Tecnológicas Inovadoras">
+  <meta property="og:description" content="Especialistas em integração de APIs, automação de processos e soluções com IA. Transformamos negócios através de tecnologia escalável.">
+  <meta property="og:image" content="https://emanar.tech/assets/emanar_social.jpg">
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://emanar.tech/">
+  <meta property="twitter:title" content="Emanar - Soluções Tecnológicas Inovadoras">
+  <meta property="twitter:description" content="Especialistas em integração de APIs, automação de processos e soluções com IA.">
+  <meta property="twitter:image" content="https://emanar.tech/assets/emanar_social.jpg">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="./assets/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="./assets/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="./assets/apple-touch-icon.png">
+
+  <!-- Fonts and Styles -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Schema.org structured data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Emanar",
+    "description": "Especialistas em integração de APIs, automação de processos e soluções com IA",
+    "url": "https://emanar.tech",
+    "logo": "https://emanar.tech/assets/emanar_logo.png",
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "telephone": "+55-13-99688-1745",
+      "contactType": "customer service",
+      "email": "arthur393@gmail.com"
+    },
+    "sameAs": [
+      "https://github.com/arthurhenrique"
+    ],
+    "foundingDate": "2014",
+    "founder": {
+      "@type": "Person",
+      "name": "Arthur Henrique"
+    },
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Cubatão",
+      "addressRegion": "São Paulo",
+      "addressCountry": "BR"
+    }
+  }
+  </script>
   <style>
     :root {
-      --fundo: #f9f9f9;
-      --verde-menta: #c6f1e7;
-      --verde-escuro: #2e7d67;
-      --areia: #f4f1ee;
-      --cinza: #999;
-      --texto: #222;
+      --primary: #10b981;
+      --primary-dark: #059669;
+      --primary-light: #34d399;
+      --accent: #c6f1e7;
+      --neutral-50: #fafafa;
+      --neutral-100: #f5f5f5;
+      --neutral-200: #e5e5e5;
+      --neutral-800: #262626;
+      --neutral-900: #171717;
+      --glass: rgba(255, 255, 255, 0.1);
+      --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     }
+    
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
+    
     body {
-      font-family: 'Inter', sans-serif;
-      background-color: var(--fundo);
-      color: var(--texto);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, var(--neutral-50) 0%, var(--accent) 100%);
+      color: var(--neutral-800);
       line-height: 1.6;
+      overflow-x: hidden;
     }
-    header {
-      background: var(--areia);
-      padding: 30px 20px;
-      text-align: center;
-      border-bottom: 1px solid #eee;
+    
+    /* Header */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--neutral-200);
+      padding: 1rem 2rem;
+      transition: all 0.3s ease;
     }
-    header img {
-      width: 340px;
-    }
-    .hero {
-      padding: 100px 20px;
-      text-align: center;
-      background: var(--verde-menta);
-      border-radius: 20px;
-      margin: 40px auto;
-      max-width: 900px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-    }
-    .hero h2 {
-      font-size: 2em;
-      margin-bottom: 20px;
-      font-weight: 600;
-    }
-    .hero p {
-      font-size: 1.1em;
-      max-width: 600px;
+    
+    .nav {
+      max-width: 1200px;
       margin: 0 auto;
-      color: var(--texto);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
-    .cta {
-      display: inline-block;
-      margin-top: 30px;
-      padding: 12px 30px;
-      background: var(--areia);
-      color: var(--texto);
+    
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary);
       text-decoration: none;
-      border-radius: 30px;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-      font-weight: 600;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
-    .cta:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+    
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
     }
-    .about, .contact {
-      padding: 60px 20px;
+    
+    .nav-links a {
+      text-decoration: none;
+      color: var(--neutral-800);
+      font-weight: 500;
+      transition: color 0.3s ease;
+      position: relative;
+    }
+    
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--primary);
+      transition: width 0.3s ease;
+    }
+    
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+    
+    /* Hero Section */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      position: relative;
+      background: linear-gradient(135deg, var(--neutral-50) 0%, var(--accent) 50%, var(--primary-light) 100%);
+    }
+    
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="20" cy="20" r="1" fill="%23ffffff" opacity="0.1"/><circle cx="80" cy="40" r="1" fill="%23ffffff" opacity="0.1"/><circle cx="40" cy="80" r="1" fill="%23ffffff" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+      opacity: 0.3;
+    }
+    
+    .hero-content {
       max-width: 800px;
-      margin: 0 auto;
+      padding: 2rem;
+      position: relative;
+      z-index: 1;
+      animation: fadeInUp 1s ease-out;
     }
-    .about h3, .contact h3 {
-      font-size: 1.6em;
-      margin-bottom: 20px;
+    
+    .hero-title {
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      background: linear-gradient(135deg, var(--neutral-900), var(--primary-dark));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .hero-subtitle {
+      font-size: 1.25rem;
+      color: var(--neutral-800);
+      margin-bottom: 2rem;
+      font-weight: 400;
+      opacity: 0.9;
+    }
+    
+    .cta-group {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    
+    .cta-primary, .cta-secondary {
+      padding: 1rem 2rem;
+      border-radius: 50px;
+      text-decoration: none;
       font-weight: 600;
-    }
-    .about p {
-      color: var(--texto);
-    }
-    .contact a {
+      font-size: 1rem;
+      transition: all 0.3s ease;
       display: inline-flex;
       align-items: center;
-      margin: 10px 15px;
-      text-decoration: none;
-      color: var(--texto);
-      font-weight: 500;
-      transition: color 0.3s;
+      gap: 0.5rem;
     }
-    .contact a i {
-      margin-right: 10px;
-      color: var(--verde-escuro);
+    
+    .cta-primary {
+      background: var(--primary);
+      color: white;
+      box-shadow: var(--shadow-lg);
     }
-    .contact a:hover {
-      color: var(--cinza);
+    
+    .cta-primary:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
     }
-    footer {
-      background: var(--areia);
-      padding: 20px;
+    
+    .cta-secondary {
+      background: rgba(255, 255, 255, 0.9);
+      color: var(--neutral-800);
+      border: 1px solid var(--neutral-200);
+      backdrop-filter: blur(10px);
+    }
+    
+    .cta-secondary:hover {
+      background: white;
+      transform: translateY(-2px);
+    }
+    
+    /* Services Section */
+    .services {
+      padding: 6rem 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .section-title {
       text-align: center;
-      font-size: 0.9em;
-      color: var(--cinza);
-      border-top: 1px solid #eee;
-      margin-top: 40px;
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: var(--neutral-900);
+    }
+    
+    .section-subtitle {
+      text-align: center;
+      font-size: 1.1rem;
+      color: var(--neutral-800);
+      margin-bottom: 4rem;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      opacity: 0.8;
+    }
+    
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+    }
+    
+    .service-card {
+      background: white;
+      padding: 2.5rem;
+      border-radius: 20px;
+      box-shadow: var(--shadow-lg);
+      transition: all 0.3s ease;
+      border: 1px solid var(--neutral-200);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .service-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary), var(--primary-light));
+    }
+    
+    .service-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow);
+    }
+    
+    .service-icon {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      border-radius: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+      font-size: 1.5rem;
+      color: white;
+    }
+    
+    .service-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--neutral-900);
+    }
+    
+    .service-description {
+      color: var(--neutral-800);
+      opacity: 0.8;
+    }
+    
+    /* About Section */
+    .about {
+      background: white;
+      padding: 6rem 2rem;
+      margin: 4rem 0;
+    }
+    
+    .about-content {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+    }
+    
+    .about-text h3 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      color: var(--neutral-900);
+    }
+    
+    .about-text p {
+      font-size: 1.1rem;
+      color: var(--neutral-800);
+      opacity: 0.8;
+      margin-bottom: 1.5rem;
+    }
+    
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+    
+    .stat {
+      text-align: center;
+      padding: 1rem;
+    }
+    
+    .stat-number {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    
+    .stat-label {
+      font-size: 0.9rem;
+      color: var(--neutral-800);
+      opacity: 0.7;
+    }
+    
+    .about-visual {
+      position: relative;
+    }
+    
+    .tech-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+    
+    .tech-item {
+      aspect-ratio: 1;
+      background: var(--neutral-100);
+      border-radius: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: var(--primary);
+      transition: all 0.3s ease;
+    }
+    
+    .tech-item:hover {
+      background: var(--accent);
+      transform: scale(1.05);
+    }
+    
+    /* Contact Section */
+    .contact {
+      padding: 6rem 2rem;
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    
+    .contact-links {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      flex-wrap: wrap;
+      margin-top: 3rem;
+    }
+    
+    .contact-link {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      color: var(--neutral-800);
+      background: white;
+      padding: 1rem 1.5rem;
+      border-radius: 50px;
+      box-shadow: var(--shadow-lg);
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+    
+    .contact-link:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+      color: var(--primary);
+    }
+    
+    .contact-icon {
+      width: 20px;
+      height: 20px;
+      color: var(--primary);
+    }
+    
+    /* Footer */
+    .footer {
+      background: var(--neutral-900);
+      color: white;
+      padding: 2rem;
+      text-align: center;
+      margin-top: 4rem;
+    }
+    
+    /* Animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .fade-in {
+      animation: fadeInUp 0.6s ease-out forwards;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .nav-links {
+        display: none;
+      }
+      
+      .about-content {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+      
+      .cta-group {
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .contact-links {
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .services-grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
 <body>
-
-  <header>
-    <img src="./assets/emanar_logo.png" alt="Emanar Logo">
+  <header class="header">
+    <nav class="nav">
+      <a href="#" class="logo">
+        <img src="./assets/emanar_logo.png" alt="Emanar Logo" style="height: 40px; width: auto;">
+      </a>
+      <ul class="nav-links">
+        <li><a href="#services">Serviços</a></li>
+        <li><a href="#about">Sobre</a></li>
+        <li><a href="#contact">Contato</a></li>
+      </ul>
+    </nav>
   </header>
 
   <section class="hero">
-    <h2>Soluções Tecnológicas Inovadoras</h2>
-    <p>Conectamos sistemas, automatizamos processos e entregamos soluções robustas e seguras para o seu negócio crescer.</p>
-    <a href="#contact" class="cta">Fale Conosco</a>
+    <div class="hero-content">
+      <h1 class="hero-title">Tecnologia que Transforma Negócios</h1>
+      <p class="hero-subtitle">Integrações inteligentes, automações robustas e soluções escaláveis para impulsionar o crescimento da sua empresa</p>
+      <div class="cta-group">
+        <a href="#contact" class="cta-primary">
+          <i class="fas fa-rocket"></i>
+          Vamos Conversar
+        </a>
+        <a href="#services" class="cta-secondary">
+          <i class="fas fa-arrow-down"></i>
+          Nossos Serviços
+        </a>
+      </div>
+    </div>
   </section>
 
-  <section class="about">
-    <h3>Quem Somos</h3>
-    <p>Na Emanar, combinamos tecnologia de ponta com expertise em integração de APIs, automação de processos e desenvolvimento de sistemas escaláveis. Nosso objetivo é potencializar sua empresa através de soluções inteligentes e sob medida.</p>
+  <section class="services" id="services">
+    <h2 class="section-title">Nossas Especialidades</h2>
+    <p class="section-subtitle">Soluções completas para digitalizar e otimizar seus processos empresariais</p>
+    
+    <div class="services-grid">
+      <div class="service-card">
+        <div class="service-icon">
+          <i class="fas fa-plug"></i>
+        </div>
+        <h3 class="service-title">Integração de APIs</h3>
+        <p class="service-description">Conectamos seus sistemas de forma seamless, criando fluxos de dados eficientes e seguros entre diferentes plataformas.</p>
+      </div>
+      
+      <div class="service-card">
+        <div class="service-icon">
+          <i class="fas fa-cogs"></i>
+        </div>
+        <h3 class="service-title">Automação de Processos</h3>
+        <p class="service-description">Eliminamos tarefas repetitivas através de automações inteligentes que economizam tempo e reduzem erros operacionais.</p>
+      </div>
+      
+      <div class="service-card">
+        <div class="service-icon">
+          <i class="fas fa-expand-arrows-alt"></i>
+        </div>
+        <h3 class="service-title">Sistemas Escaláveis</h3>
+        <p class="service-description">Desenvolvemos arquiteturas robustas que crescem junto com seu negócio, garantindo performance e confiabilidade.</p>
+      </div>
+      
+      <div class="service-card">
+        <div class="service-icon">
+          <i class="fas fa-brain"></i>
+        </div>
+        <h3 class="service-title">Integração com IA</h3>
+        <p class="service-description">Incorporamos inteligência artificial aos seus processos, desde análise de dados até automações cognitivas avançadas.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="about" id="about">
+    <div class="about-content">
+      <div class="about-text">
+        <h3>Transformação Digital Inteligente</h3>
+        <p>Na Emanar, combinamos expertise técnica com visão estratégica para entregar soluções que realmente fazem a diferença no seu negócio.</p>
+        <p>Nossa abordagem focada em resultados garante que cada projeto contribua diretamente para o crescimento e eficiência operacional da sua empresa.</p>
+        
+        <div class="stats">
+          <div class="stat">
+            <div class="stat-number">10+</div>
+            <div class="stat-label">Anos Experiência</div>
+          </div>
+          <div class="stat">
+            <div class="stat-number">100%</div>
+            <div class="stat-label">Código Personalizado</div>
+          </div>
+          <div class="stat">
+            <div class="stat-number">24/7</div>
+            <div class="stat-label">Suporte Técnico</div>
+          </div>
+          <div class="stat">
+            <div class="stat-number">12+</div>
+            <div class="stat-label">Tecnologias</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="about-visual">
+        <div class="tech-grid">
+          <div class="tech-item"><i class="fab fa-node-js"></i></div>
+          <div class="tech-item"><i class="fab fa-python"></i></div>
+          <div class="tech-item"><i class="fab fa-java"></i></div>
+          <div class="tech-item"><i class="fas fa-database"></i></div>
+          <div class="tech-item"><i class="fab fa-aws"></i></div>
+          <div class="tech-item"><i class="fab fa-docker"></i></div>
+          <div class="tech-item"><i class="fab fa-golang"></i></div>
+          <div class="tech-item"><i class="fas fa-dharmachakra"></i></div>
+          <div class="tech-item"><i class="fas fa-shield-alt"></i></div>
+        </div>
+      </div>
+    </div>
   </section>
 
   <section class="contact" id="contact">
-    <h3>Contato</h3>
-    <a href="mailto:arthur393@gmail.com">
-      <i class="fas fa-envelope"></i> arthur393@gmail.com
-    </a>
-    <a href="https://wa.me/5513996881745" target="_blank">
-      <i class="fab fa-whatsapp"></i> +55 13 99688-1745
-    </a>
-    <a href="https://github.com/arthurhenrique" target="_blank">
-      <i class="fab fa-github"></i> github.com/arthurhenrique
-    </a>
+    <h2 class="section-title">Vamos Criar Algo Incrível Juntos</h2>
+    <p class="section-subtitle">Entre em contato e descubra como podemos acelerar o crescimento do seu negócio</p>
+    
+    <div class="contact-links">
+      <a href="mailto:arthur393@gmail.com" class="contact-link">
+        <i class="fas fa-envelope contact-icon"></i>
+        arthur393@gmail.com
+      </a>
+      
+      <a href="https://wa.me/5513996881745" target="_blank" class="contact-link">
+        <i class="fab fa-whatsapp contact-icon"></i>
+        +55 13 99688-1745
+      </a>
+      
+      <a href="https://github.com/arthurhenrique" target="_blank" class="contact-link">
+        <i class="fab fa-github contact-icon"></i>
+        @arthurhenrique
+      </a>
+    </div>
   </section>
 
-  <footer>
-    &copy; <span id="year"></span> Emanar. Todos os direitos reservados.
+  <footer class="footer">
+    <p>&copy; <span id="year"></span> Emanar. Transformando ideias em soluções digitais.</p>
   </footer>
 
   <script>
+    // Set current year
     document.getElementById('year').textContent = new Date().getFullYear();
+    
+    // Smooth scrolling for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      });
+    });
+    
+    // Intersection Observer for animations
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('fade-in');
+        }
+      });
+    }, observerOptions);
+    
+    // Observe service cards and other elements
+    document.querySelectorAll('.service-card, .about-content, .contact').forEach(el => {
+      observer.observe(el);
+    });
+    
+    // Header background on scroll
+    window.addEventListener('scroll', () => {
+      const header = document.querySelector('.header');
+      if (window.scrollY > 100) {
+        header.style.background = 'rgba(255, 255, 255, 0.98)';
+      } else {
+        header.style.background = 'rgba(255, 255, 255, 0.95)';
+      }
+    });
   </script>
-
 </body>
 </html>
