@@ -1,0 +1,711 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Shut the Switches</title>
+
+<style>
+  :root{
+    --bg:#151518;
+    --card:#1f1f25;
+    --ink:#f3f4ff;
+    --muted:#a9abc2;
+    --gold:#ffcc00;
+    --on:#ffe066;
+    --onGlow: rgba(255, 224, 102, .65);
+    --off:#2b2d3a;
+    --offInk:#cfd2ff;
+    --shadow: rgba(0,0,0,.45);
+    --ok:#4ade80;
+    --bad:#fb7185;
+    --sel:#7c3aed;
+    --selGlow: rgba(124,58,237,.35);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family: system-ui, Segoe UI, Roboto, Arial;
+    background:
+      radial-gradient(800px 500px at 15% 10%, #2a2d55 0%, transparent 60%),
+      radial-gradient(700px 500px at 85% 0%, #3a1b4d 0%, transparent 55%),
+      var(--bg);
+    color: var(--ink);
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 22px;
+  }
+  .wrap{
+    width:min(1050px, 98%);
+    background: rgba(31,31,37,.78);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 22px;
+    box-shadow: 0 22px 70px var(--shadow);
+    backdrop-filter: blur(10px);
+    padding: 20px 18px 16px;
+  }
+
+  header{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap: 14px;
+    flex-wrap:wrap;
+  }
+  h1{
+    margin:0;
+    font-size: 18px;
+    letter-spacing:.2px;
+  }
+  .sub{
+    margin-top:6px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.35;
+    max-width: 78ch;
+  }
+
+  .topbar{
+    margin-top: 14px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap: 14px;
+    flex-wrap:wrap;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255,255,255,.08);
+  }
+
+  .stats{
+    display:flex;
+    gap: 10px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+  .pill{
+    padding: 8px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,.12);
+    background: rgba(255,255,255,.04);
+    color: var(--muted);
+    font-size: 13px;
+    display:flex;
+    align-items:center;
+    gap: 8px;
+  }
+  .pill strong{ color: var(--ink); font-weight: 800; }
+
+  .controls{
+    display:flex;
+    gap: 10px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+  button{
+    border: 0;
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-weight: 800;
+    cursor:pointer;
+    color: var(--ink);
+    background: rgba(255,255,255,.08);
+    border: 1px solid rgba(255,255,255,.12);
+    transition: transform .08s ease, background .2s ease, border-color .2s ease, opacity .2s ease;
+  }
+  button:hover{ background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.18); }
+  button:active{ transform: translateY(1px); }
+  button:disabled{ opacity:.55; cursor:not-allowed; }
+
+  .primary{
+    background: var(--gold);
+    color:#111;
+    border-color: rgba(0,0,0,.18);
+  }
+  .primary:hover{ background: #ffd84d; }
+
+  .danger{
+    background: rgba(251,113,133,.16);
+    border-color: rgba(251,113,133,.25);
+  }
+
+  /* Dice */
+  .diceRow{
+    margin-top: 14px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap: 18px;
+    flex-wrap:wrap;
+  }
+  .scene{
+    width: 92px;
+    height: 92px;
+    perspective: 900px;
+  }
+  .dice{
+    width: 92px;
+    height: 92px;
+    position:relative;
+    transform-style:preserve-3d;
+    transition: transform 900ms cubic-bezier(.2,.9,.2,1);
+  }
+  .face{
+    position:absolute;
+    width: 92px;
+    height: 92px;
+    background: #f7f7fb;
+    border: 2px solid #1e1e24;
+    border-radius: 14px;
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    grid-template-rows:repeat(3,1fr);
+    padding: 13px;
+    box-shadow: inset 0 0 0 2px rgba(0,0,0,.06);
+  }
+  .dot{
+    width: 14px;
+    height: 14px;
+    background: #121219;
+    border-radius: 50%;
+    justify-self:center;
+    align-self:center;
+    box-shadow: 0 1px 0 rgba(255,255,255,.25);
+  }
+  .face1{ transform: rotateY(0deg) translateZ(46px); }
+  .face2{ transform: rotateY(180deg) translateZ(46px); }
+  .face3{ transform: rotateY(90deg) translateZ(46px); }
+  .face4{ transform: rotateY(-90deg) translateZ(46px); }
+  .face5{ transform: rotateX(90deg) translateZ(46px); }
+  .face6{ transform: rotateX(-90deg) translateZ(46px); }
+
+  .target{
+    display:flex;
+    align-items:center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,.12);
+    background: rgba(255,255,255,.04);
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .target .big{
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--ink);
+    min-width: 34px;
+    text-align:center;
+  }
+
+  /* Grid switches */
+  .grid{
+    margin-top: 18px;
+    display:grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 18px;
+  }
+  @media (max-width: 720px){
+    .grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+
+  .panel{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 18px;
+    border: 1px solid rgba(255,255,255,.10);
+    background: rgba(255,255,255,.035);
+    transition: transform .08s ease, border-color .2s ease, background .2s ease, box-shadow .2s ease;
+  }
+  .panel:hover{
+    transform: translateY(-1px);
+    border-color: rgba(255,255,255,.16);
+    background: rgba(255,255,255,.05);
+  }
+  .num{
+    font-weight: 950;
+    letter-spacing:.2px;
+    color: var(--offInk);
+    opacity:.95;
+  }
+
+  .bulb{
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #2b2b33;
+    border: 1px solid rgba(255,255,255,.10);
+    box-shadow: inset 0 0 10px rgba(0,0,0,.5);
+    transition: background .18s ease, box-shadow .18s ease, transform .18s ease, opacity .18s ease;
+  }
+  .bulb.on{
+    background: var(--on);
+    box-shadow: 0 0 22px var(--onGlow), 0 0 60px rgba(255, 204, 0, .25);
+  }
+
+  /* wall switch */
+  .switch{
+    width: 56px;
+    height: 98px;
+    background: #e9e9ef;
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,.22);
+    box-shadow:
+      inset 0 0 10px rgba(0,0,0,.22),
+      0 10px 30px rgba(0,0,0,.22);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    position: relative;
+  }
+  .toggle{
+    width: 34px;
+    height: 64px;
+    border-radius: 8px;
+    background: #f5f5fb;
+    border: 1px solid rgba(0,0,0,.18);
+    box-shadow: inset 0 -6px 10px rgba(0,0,0,.12);
+    transition: transform .14s ease, background .14s ease, box-shadow .14s ease;
+  }
+  /* OPEN = up (ON) | CLOSED = down (OFF) */
+  .open .toggle{
+    transform: translateY(-12px);
+  }
+  .closed .toggle{
+    transform: translateY(12px);
+    background: #dedee8;
+  }
+
+  /* selection ring */
+  .panel.selected{
+    border-color: rgba(124,58,237,.55);
+    box-shadow: 0 0 0 6px var(--selGlow);
+  }
+  .panel.closed{
+    opacity: .45;
+    filter: grayscale(.25);
+  }
+  .panel.closed .switch{
+    cursor: not-allowed;
+  }
+
+  .msg{
+    margin-top: 14px;
+    padding: 12px;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,.12);
+    background: rgba(255,255,255,.04);
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.35;
+  }
+  .msg.good{
+    border-color: rgba(74,222,128,.28);
+    background: rgba(74,222,128,.06);
+    color: #dbffe7;
+  }
+  .msg.bad{
+    border-color: rgba(251,113,133,.30);
+    background: rgba(251,113,133,.06);
+    color: #ffe3e8;
+  }
+
+  .footer{
+    margin-top: 14px;
+    text-align:center;
+    opacity:.62;
+    font-size: 12px;
+  }
+
+  .hint{
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 6px;
+  }
+</style>
+</head>
+
+<body>
+  <main class="wrap">
+    <header>
+      <div>
+        <h1>🎲 Shut the Switches</h1>
+        <div class="sub">
+          Mecânica estilo <b>Shut the Box</b>: role os dados, selecione interruptores <b>ainda abertos</b> cuja soma bate o valor,
+          depois clique em <b>Fechar selecionados</b>. Objetivo: fechar todos.
+        </div>
+        <div class="hint">Regra: quando a soma dos abertos for ≤ 6, você pode escolher rolar 1 dado.</div>
+      </div>
+
+      <div class="controls">
+        <button id="rollBtn" class="primary">Rolar</button>
+        <button id="closeBtn" disabled>Fechar selecionados</button>
+        <button id="clearBtn">Limpar seleção</button>
+        <button id="resetBtn" class="danger">Reset</button>
+      </div>
+    </header>
+
+    <div class="topbar">
+      <div class="stats">
+        <div class="pill">Jogadas: <strong id="moves">0</strong></div>
+        <div class="pill">Soma restante: <strong id="remaining">55</strong></div>
+        <div class="pill">Dados: <strong id="diceMode">2</strong></div>
+      </div>
+      <div class="target">
+        Alvo (soma): <span class="big" id="target">–</span>
+      </div>
+    </div>
+
+    <div class="diceRow">
+      <div class="scene" aria-label="Dado 1">
+        <div class="dice" id="dice1">
+          <!-- 1 -->
+          <div class="face face1">
+            <div></div><div></div><div></div>
+            <div></div><div class="dot"></div><div></div>
+            <div></div><div></div><div></div>
+          </div>
+          <!-- 2 -->
+          <div class="face face2">
+            <div class="dot"></div><div></div><div></div>
+            <div></div><div></div><div></div>
+            <div></div><div></div><div class="dot"></div>
+          </div>
+          <!-- 3 -->
+          <div class="face face3">
+            <div class="dot"></div><div></div><div></div>
+            <div></div><div class="dot"></div><div></div>
+            <div></div><div></div><div class="dot"></div>
+          </div>
+          <!-- 4 -->
+          <div class="face face4">
+            <div class="dot"></div><div></div><div class="dot"></div>
+            <div></div><div></div><div></div>
+            <div class="dot"></div><div></div><div class="dot"></div>
+          </div>
+          <!-- 5 -->
+          <div class="face face5">
+            <div class="dot"></div><div></div><div class="dot"></div>
+            <div></div><div class="dot"></div><div></div>
+            <div class="dot"></div><div></div><div class="dot"></div>
+          </div>
+          <!-- 6 -->
+          <div class="face face6">
+            <div class="dot"></div><div></div><div class="dot"></div>
+            <div class="dot"></div><div></div><div class="dot"></div>
+            <div class="dot"></div><div></div><div class="dot"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="scene" aria-label="Dado 2" id="dice2Scene">
+        <div class="dice" id="dice2">
+          <!-- 1 -->
+          <div class="face face1">
+            <div></div><div></div><div></div>
+            <div></div><div class="dot"></div><div></div>
+            <div></div><div></div><div></div>
+          </div>
+          <!-- 2 -->
+          <div class="face face2">
+            <div class="dot"></div><div></div><div></div>
+            <div></div><div></div><div></div>
+            <div></div><div></div><div class="dot"></div>
+          </div>
+          <!-- 3 -->
+          <div class="face face3">
+            <div class="dot"></div><div></div><div></div>
+            <div></div><div class="dot"></div><div></div>
+            <div></div><div></div><div class="dot"></div>
+          </div>
+          <!-- 4 -->
+          <div class="face face4">
+            <div class="dot"></div><div></div><div class="dot"></div>
+            <div></div><div></div><div></div>
+            <div class="dot"></div><div></div><div class="dot"></div>
+          </div>
+          <!-- 5 -->
+          <div class="face face5">
+            <div class="dot"></div><div></div><div class="dot"></div>
+            <div></div><div class="dot"></div><div></div>
+            <div class="dot"></div><div></div><div class="dot"></div>
+          </div>
+          <!-- 6 -->
+          <div class="face face6">
+            <div class="dot"></div><div></div><div class="dot"></div>
+            <div class="dot"></div><div></div><div class="dot"></div>
+            <div class="dot"></div><div></div><div class="dot"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <section class="grid" id="grid" aria-label="Interruptores 1 a 10"></section>
+
+    <div class="msg" id="msg" role="status" aria-live="polite">
+      Clique em <b>Rolar</b> para começar.
+    </div>
+
+    <div class="footer">maycon comics productions ✦ 2026</div>
+  </main>
+
+<script>
+(() => {
+  const N = 10;
+
+  const rollBtn = document.getElementById('rollBtn');
+  const closeBtn = document.getElementById('closeBtn');
+  const clearBtn = document.getElementById('clearBtn');
+  const resetBtn = document.getElementById('resetBtn');
+
+  const movesEl = document.getElementById('moves');
+  const remainingEl = document.getElementById('remaining');
+  const diceModeEl = document.getElementById('diceMode');
+  const targetEl = document.getElementById('target');
+  const msgEl = document.getElementById('msg');
+
+  const grid = document.getElementById('grid');
+
+  const dice1 = document.getElementById('dice1');
+  const dice2 = document.getElementById('dice2');
+  const dice2Scene = document.getElementById('dice2Scene');
+
+  // true = open (still available), false = closed (shut)
+  let open = Array.from({length:N}, () => true);
+
+  let moves = 0;
+  let currentTarget = null;
+  let rolled = false;
+  let diceCount = 2;
+  let d1 = null, d2 = null;
+
+  const selected = new Set();
+
+  function randInt(min, max){
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  function sumOpen(){
+    let s = 0;
+    for(let i=0;i<N;i++) if(open[i]) s += (i+1);
+    return s;
+  }
+
+  function sumSelected(){
+    let s = 0;
+    for(const idx of selected) s += (idx+1);
+    return s;
+  }
+
+  function setMsg(type, text){
+    msgEl.className = 'msg' + (type ? ` ${type}` : '');
+    msgEl.innerHTML = text;
+  }
+
+  function setDiceTransform(diceEl, value){
+    const rotations = {
+      1:"rotateX(0deg) rotateY(0deg)",
+      2:"rotateY(180deg)",
+      3:"rotateY(-90deg)",
+      4:"rotateY(90deg)",
+      5:"rotateX(-90deg)",
+      6:"rotateX(90deg)"
+    };
+    diceEl.style.transform = rotations[value];
+  }
+
+  function animateRoll(diceEl){
+    // quick spin, then we set final face
+    diceEl.style.transform = "rotateX(720deg) rotateY(720deg)";
+  }
+
+  // Check if any subset of open numbers can make target
+  function hasMove(target){
+    const nums = [];
+    for(let i=0;i<N;i++) if(open[i]) nums.push(i+1);
+
+    // subset sum with small N, brute force via recursion
+    function dfs(pos, acc){
+      if(acc === target) return true;
+      if(acc > target) return false;
+      for(let i=pos;i<nums.length;i++){
+        if(dfs(i+1, acc + nums[i])) return true;
+      }
+      return false;
+    }
+    return dfs(0, 0);
+  }
+
+  function render(){
+    movesEl.textContent = String(moves);
+
+    const rem = sumOpen();
+    remainingEl.textContent = String(rem);
+
+    // Decide dice mode (classic rule)
+    diceCount = (rem <= 6) ? 1 : 2;
+    diceModeEl.textContent = String(diceCount);
+    dice2Scene.style.display = (diceCount === 2) ? '' : 'none';
+
+    targetEl.textContent = (currentTarget == null) ? '–' : String(currentTarget);
+
+    closeBtn.disabled = !(rolled && sumSelected() === currentTarget && selected.size > 0);
+
+    grid.innerHTML = "";
+    for(let idx=0; idx<N; idx++){
+      const isOpen = open[idx];
+      const isSelected = selected.has(idx);
+
+      const panel = document.createElement('div');
+      panel.className = 'panel' + (isSelected ? ' selected' : '') + (isOpen ? '' : ' closed');
+
+      const num = document.createElement('div');
+      num.className = 'num';
+      num.textContent = `Interruptor ${idx+1}`;
+
+      const bulb = document.createElement('div');
+      // Open = "on" (aceso), Closed = apagado
+      bulb.className = 'bulb' + (isOpen ? ' on' : '');
+
+      const sw = document.createElement('div');
+      // Open -> switch is "open" (up). Closed -> switch "closed" (down)
+      sw.className = 'switch ' + (isOpen ? 'open' : 'closed');
+      sw.innerHTML = `<div class="toggle"></div>`;
+
+      sw.addEventListener('click', () => {
+        if(!rolled) return;          // must roll first
+        if(!isOpen) return;          // cannot select closed
+        // toggle selection
+        if(selected.has(idx)) selected.delete(idx);
+        else selected.add(idx);
+
+        // If selection sum exceeds target, keep it but warn
+        const s = sumSelected();
+        if(s > currentTarget){
+          setMsg('bad', `⚠️ Sua seleção somou <b>${s}</b>, passou do alvo <b>${currentTarget}</b>. Ajuste a seleção.`);
+        } else {
+          setMsg('', `Seleção atual: <b>${s}</b> / alvo: <b>${currentTarget}</b>.`);
+        }
+
+        render();
+      });
+
+      panel.appendChild(num);
+      panel.appendChild(bulb);
+      panel.appendChild(sw);
+      grid.appendChild(panel);
+    }
+
+    // Win?
+    if(sumOpen() === 0){
+      rollBtn.disabled = true;
+      closeBtn.disabled = true;
+      clearBtn.disabled = true;
+      setMsg('good', `✅ Você fechou tudo em <b>${moves}</b> jogadas. Placar perfeito.`);
+    }
+  }
+
+  function roll(){
+    if(rolled) return; // prevent reroll until applying/clearing? We'll force clear/apply first
+    if(sumOpen() === 0) return;
+
+    selected.clear();
+
+    d1 = randInt(1,6);
+    d2 = randInt(1,6);
+
+    animateRoll(dice1);
+    if(diceCount === 2) animateRoll(dice2);
+
+    // After a short delay, set faces and compute target
+    setTimeout(() => {
+      setDiceTransform(dice1, d1);
+      if(diceCount === 2) setDiceTransform(dice2, d2);
+
+      currentTarget = (diceCount === 2) ? (d1 + d2) : d1;
+      rolled = true;
+
+      // Game over check
+      if(!hasMove(currentTarget)){
+        setMsg('bad', `☠️ Você rolou <b>${currentTarget}</b> e não existe combinação possível com os interruptores abertos. Fim de jogo. (Soma restante: <b>${sumOpen()}</b>)`);
+        rollBtn.disabled = true;
+        closeBtn.disabled = true;
+        clearBtn.disabled = true;
+        return;
+      }
+
+      setMsg('', `🎯 Alvo: <b>${currentTarget}</b>. Selecione interruptores abertos que somem esse valor e clique em <b>Fechar selecionados</b>.`);
+      render();
+    }, 650);
+  }
+
+  function closeSelected(){
+    if(!rolled) return;
+    const s = sumSelected();
+    if(s !== currentTarget || selected.size === 0) return;
+
+    // Close them (shut the box)
+    for(const idx of selected) open[idx] = false;
+
+    moves += 1;
+
+    // reset turn
+    selected.clear();
+    rolled = false;
+    currentTarget = null;
+
+    // enable roll again
+    rollBtn.disabled = false;
+    closeBtn.disabled = true;
+    clearBtn.disabled = false;
+
+    setMsg('', `✅ Fechado! Jogada contabilizada. Role novamente.`);
+    render();
+  }
+
+  function clearSelection(){
+    if(!rolled) return;
+    selected.clear();
+    setMsg('', `Seleção limpa. Alvo atual: <b>${currentTarget}</b>.`);
+    render();
+  }
+
+  function reset(){
+    open = Array.from({length:N}, () => true);
+    moves = 0;
+    currentTarget = null;
+    rolled = false;
+    selected.clear();
+    d1 = null; d2 = null;
+
+    rollBtn.disabled = false;
+    closeBtn.disabled = true;
+    clearBtn.disabled = false;
+
+    // reset dice visuals
+    setDiceTransform(dice1, 1);
+    setDiceTransform(dice2, 1);
+    dice2Scene.style.display = '';
+
+    setMsg('', `Clique em <b>Rolar</b> para começar.`);
+    render();
+  }
+
+  rollBtn.addEventListener('click', roll);
+  closeBtn.addEventListener('click', closeSelected);
+  clearBtn.addEventListener('click', clearSelection);
+  resetBtn.addEventListener('click', reset);
+
+  // initial
+  setDiceTransform(dice1, 1);
+  setDiceTransform(dice2, 1);
+  render();
+})();
+</script>
+</body>
+</html>
