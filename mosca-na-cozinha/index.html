@@ -97,7 +97,7 @@
     const c=canvas.getContext('2d'), lanes=[-1,0,1];
     let playing=false,paused=false,last=0,score=0,crumbs=0,speed=1,flyLane=0,targetLane=0,flyY=.68,targetY=.68,items=[],touch=null;
     const resize=()=>{let d=Math.min(devicePixelRatio||1,2);canvas.width=innerWidth*d;canvas.height=innerHeight*d;c.setTransform(d,0,0,d,0,0)};
-    const reset=()=>{score=0;crumbs=0;speed=1;flyLane=targetLane=0;flyY=targetY=.68;items=[];for(let i=0;i<11;i++)spawn(i*.1+.15);updateHud()};
+    const reset=()=>{score=0;crumbs=0;speed=1;flyLane=targetLane=0;flyY=targetY=.68;items=[];for(let i=0;i<9;i++)spawn(i*.08+.03);updateHud()};
     const spawn=p=>{let safe=Math.floor(Math.random()*3)-1;items.push({kind:'crumb',lane:safe,p,y:Math.random()<.25?.42:.68});if(Math.random()<.84){let block=lanes.filter(x=>x!==safe)[Math.floor(Math.random()*2)];items.push({kind:Math.random()<.22?'high':'block',lane:block,p:p+.025,color:['#b73326','#efaa24','#3a8690','#aaca31'][Math.floor(Math.random()*4)]})}};
     const updateHud=()=>{ui.score.textContent=Math.floor(score).toString().padStart(4,'0');ui.crumbs.textContent=crumbs;ui.speed.textContent=speed.toFixed(1)+'×'};
     const start=()=>{reset();playing=true;paused=false;ui.start.classList.add('hidden');ui.over.classList.add('hidden');ui.pause.textContent='Ⅱ';last=performance.now()};
