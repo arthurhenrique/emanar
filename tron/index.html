@@ -1,151 +1,46 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <meta name="theme-color" content="#02050b">
+  <title>NEON//RIDER — Corrida WebGL</title>
   <style>
-    * {margin:0;padding:0;box-sizing:border-box;}
-    body, html {width:100%;height:100%;overflow:hidden;background:#000;}
-    canvas {display:block;}
+    :root{color-scheme:dark;--cyan:#58f7ff;--orange:#ff7a18;--ink:#02050b}*{box-sizing:border-box;margin:0;padding:0}html,body{width:100%;height:100%;overflow:hidden;background:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,sans-serif}body{touch-action:none;user-select:none;-webkit-user-select:none}canvas{display:block;width:100%;height:100%}#gl,#fx{position:fixed;inset:0}#fx{pointer-events:none}.vignette{position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 46%,transparent 42%,rgba(0,3,9,.2) 70%,rgba(0,0,0,.75) 112%)}.scanlines{position:fixed;inset:0;pointer-events:none;opacity:.1;background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(110,240,255,.12) 4px);mix-blend-mode:screen}
+    #hud{position:fixed;inset:0;pointer-events:none;padding:max(18px,env(safe-area-inset-top)) max(18px,env(safe-area-inset-right)) max(18px,env(safe-area-inset-bottom)) max(18px,env(safe-area-inset-left));color:#fff;text-transform:uppercase;letter-spacing:.14em}.top{display:flex;justify-content:space-between;align-items:flex-start;gap:20px}.brand{font-weight:900;font-style:italic;font-size:clamp(15px,2vw,22px);letter-spacing:.18em;text-shadow:0 0 16px var(--cyan)}.brand b{color:var(--cyan)}.score{text-align:right}.label{color:#7aa0af;font-size:9px;font-weight:700}.value{font:800 clamp(22px,5vw,42px)/1 ui-monospace,SFMono-Regular,Menlo,monospace;text-shadow:0 0 14px rgba(88,247,255,.55)}.value small{font-size:.35em}.status{position:absolute;left:max(18px,env(safe-area-inset-left));bottom:max(20px,env(safe-area-inset-bottom));width:min(310px,calc(100vw - 36px))}.speed{display:flex;align-items:baseline;gap:8px}#speed{font:900 clamp(38px,9vw,72px)/.9 ui-monospace,SFMono-Regular,Menlo,monospace}.unit{color:#7aa0af;font-size:10px}.boost-head{display:flex;justify-content:space-between;font-size:9px;margin-top:14px;color:#8bdce5}.boost-track{height:4px;margin-top:7px;background:rgba(120,220,240,.12);overflow:hidden;transform:skewX(-22deg);box-shadow:0 0 0 1px rgba(110,240,255,.18)}#boostFill{height:100%;width:100%;background:var(--cyan);box-shadow:0 0 15px var(--cyan);transition:width .08s linear}#message{position:absolute;top:20%;left:50%;transform:translateX(-50%);text-align:center;font:800 clamp(10px,2.5vw,14px)/1.5 ui-monospace,monospace;color:#dffcff;text-shadow:0 0 12px var(--cyan);opacity:0;transition:opacity .25s;white-space:nowrap}#message.show{opacity:1}
+    #boostBtn{pointer-events:auto;position:absolute;right:max(18px,env(safe-area-inset-right));bottom:max(25px,env(safe-area-inset-bottom));width:82px;height:82px;border:1px solid rgba(88,247,255,.6);border-radius:50%;color:#fff;background:radial-gradient(circle,rgba(17,95,111,.5),rgba(1,9,15,.74));box-shadow:inset 0 0 22px rgba(88,247,255,.18),0 0 24px rgba(88,247,255,.15);font:800 10px/1 ui-monospace,monospace;letter-spacing:.16em}#boostBtn:active,#boostBtn.active{background:rgba(88,247,255,.28);box-shadow:0 0 36px rgba(88,247,255,.65),inset 0 0 20px rgba(255,255,255,.22)}#pause{pointer-events:auto;position:absolute;top:max(18px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);border:0;color:#7aa0af;background:transparent;font-size:18px;padding:8px 14px}.steer{position:absolute;left:50%;bottom:max(25px,env(safe-area-inset-bottom));transform:translateX(-50%);color:rgba(166,224,231,.52);font-size:9px;text-align:center;line-height:1.8}.steer strong{display:block;font-size:18px;letter-spacing:.6em;padding-left:.6em}
+    #screen{position:fixed;inset:0;z-index:5;display:grid;place-items:center;padding:24px;background:radial-gradient(ellipse at 50% 58%,rgba(0,56,71,.33),transparent 50%),linear-gradient(rgba(1,5,11,.35),rgba(1,4,9,.88));color:#fff}#screen.hidden{display:none}.panel{width:min(620px,100%);text-align:center}.eyebrow{color:var(--cyan);font:700 10px/1 ui-monospace,monospace;letter-spacing:.45em;margin-bottom:18px}h1{font-size:clamp(48px,13vw,104px);font-weight:950;font-style:italic;line-height:.78;letter-spacing:-.07em;text-shadow:0 0 34px rgba(88,247,255,.3)}h1 span{display:block;color:transparent;-webkit-text-stroke:1px var(--cyan);font-size:.48em;letter-spacing:.22em;margin:20px 0 28px .22em;text-shadow:0 0 18px rgba(88,247,255,.45)}.intro{color:#9ab2bb;font-size:clamp(12px,2.7vw,15px);line-height:1.7;max-width:470px;margin:0 auto 30px}.play{border:1px solid var(--cyan);color:#031017;background:var(--cyan);padding:15px 30px;min-width:220px;transform:skewX(-12deg);font-weight:900;letter-spacing:.2em;cursor:pointer;box-shadow:0 0 28px rgba(88,247,255,.25)}.play span{display:block;transform:skewX(12deg)}.controls{display:flex;justify-content:center;gap:26px;margin-top:28px;color:#66838e;font:700 9px/1.6 ui-monospace,monospace;letter-spacing:.08em}.controls b{color:#b5e5e9}.final{color:var(--orange);font:800 11px/1 ui-monospace,monospace;letter-spacing:.2em;margin-bottom:16px}@media(pointer:fine){#boostBtn{width:70px;height:70px;opacity:.75}}@media(max-width:600px){.brand{max-width:140px}.steer{display:none}#pause{left:auto;right:max(8px,env(safe-area-inset-right));transform:none;top:74px}}
   </style>
 </head>
 <body>
-<canvas id="canvas"></canvas>
-
+  <canvas id="gl" aria-label="Jogo 3D de corrida futurista"></canvas><canvas id="fx"></canvas><div class="vignette"></div><div class="scanlines"></div>
+  <div id="hud"><div class="top"><div class="brand">NEON<b>//</b>RIDER</div><div class="score"><div class="label">distância</div><div class="value"><span id="score">00000</span><small>M</small></div></div></div><button id="pause" aria-label="Pausar">Ⅱ</button><div id="message">PORTAL DE ENERGIA +35</div><div class="status"><div class="speed"><span id="speed">320</span><span class="unit">KM/H</span></div><div class="boost-head"><span>NITRO</span><span id="boostText">100%</span></div><div class="boost-track"><div id="boostFill"></div></div></div><div class="steer"><strong>← →</strong>A / D PARA PILOTAR</div><button id="boostBtn">NITRO</button></div>
+  <div id="screen"><div class="panel"><div class="eyebrow">SISTEMA CONECTADO</div><h1>NEON<span>RIDER</span></h1><p class="intro">Pilote uma lightcycle em primeira pessoa. Atravesse os portais, desvie das barreiras e sobreviva à arena.</p><button class="play" id="play"><span>ENTRAR NA GRID</span></button><div class="controls"><div><b>CELULAR</b><br>arraste para pilotar</div><div><b>COMPUTADOR</b><br>A/D ou setas · espaço: nitro</div></div></div></div>
 <script>
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-const colors = ['#0ff', '#f80'];
-let cycles = [];
-const gridSize = 10;
-let animId;
-
-function gridKey(x, y) {
-  return `${Math.floor(x / gridSize)},${Math.floor(y / gridSize)}`;
-}
-
-function newCycle(color) {
-  let x = Math.floor(Math.random() * canvas.width);
-  let y = Math.floor(Math.random() * canvas.height);
-  let dir = Math.floor(Math.random() * 4) * 90;
-  let vel = directionToVelocity(dir);
-  return { x, y, dir, dx: vel.dx, dy: vel.dy, speed: gridSize, color, trail: [{x, y}] };
-}
-
-function directionToVelocity(dir) {
-  switch(dir) {
-    case 0: return { dx: 1, dy: 0 };
-    case 90: return { dx: 0, dy: 1 };
-    case 180: return { dx: -1, dy: 0 };
-    case 270: return { dx: 0, dy: -1 };
-  }
-}
-
-function resetGame() {
-  cancelAnimationFrame(animId);
-  cycles = [];
-  ctx.fillStyle = "#000";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  cycles = [newCycle(colors[0]), newCycle(colors[1])];
-  draw();
-}
-
-function predictTrail(cycle, depth) {
-  let trail = new Set(cycle.trail.map(p => gridKey(p.x, p.y)));
-  let x = cycle.x;
-  let y = cycle.y;
-  let dir = cycle.dir;
-
-  for (let i = 0; i < depth; i++) {
-    const vel = directionToVelocity(dir);
-    x += vel.dx * gridSize;
-    y += vel.dy * gridSize;
-    if (x < 0 || x > canvas.width || y < 0 || y > canvas.height) break;
-    trail.add(gridKey(x, y));
-  }
-  return trail;
-}
-
-function chooseBestAggressiveMove(cycle, predictionDepth) {
-  const other = cycles.find(c => c !== cycle);
-  const ownTrail = new Set(cycle.trail.map(p => gridKey(p.x, p.y)));
-  const otherTrail = predictTrail(other, predictionDepth);
-
-  const moves = [
-    { dir: cycle.dir, vel: directionToVelocity(cycle.dir) },
-    { dir: (cycle.dir + 90) % 360, vel: directionToVelocity((cycle.dir + 90) % 360) },
-    { dir: (cycle.dir + 270) % 360, vel: directionToVelocity((cycle.dir + 270) % 360) }
-  ];
-
-  let bestMove = moves[0];
-  let bestScore = -Infinity;
-
-  for (let move of moves) {
-    let nx = cycle.x + move.vel.dx * gridSize;
-    let ny = cycle.y + move.vel.dy * gridSize;
-    let key = gridKey(nx, ny);
-    let safe = !(ownTrail.has(key) || otherTrail.has(key) || nx < 0 || nx > canvas.width || ny < 0 || ny > canvas.height);
-    let towardsEnemy = Math.hypot(nx - other.x, ny - other.y);
-
-    // mais agressivo → peso maior + suicídio controlado
-    let score = safe ? (2000 - towardsEnemy * 0.5) : -Infinity;
-    if (towardsEnemy < gridSize * 2) score += 500;  // se tá muito perto, se joga!
-
-    if (score > bestScore) {
-      bestScore = score;
-      bestMove = move;
-    }
-  }
-  return bestMove;
-}
-
-function draw() {
-  for (let i = 0; i < cycles.length; i++) {
-    const c = cycles[i];
-    const predictionDepth = i === 0 ? 6 : 2;  // Moto 1 e 2 impulsivas
-
-    const move = chooseBestAggressiveMove(c, predictionDepth);
-    c.dir = move.dir;
-    c.dx = move.vel.dx;
-    c.dy = move.vel.dy;
-
-    c.x += c.dx * c.speed;
-    c.y += c.dy * c.speed;
-
-    const key = gridKey(c.x, c.y);
-    const allTrails = cycles.flatMap(cyc => cyc.trail.map(p => gridKey(p.x, p.y)));
-    if (allTrails.includes(key) || c.x < 0 || c.x > canvas.width || c.y < 0 || c.y > canvas.height) {
-      resetGame();
-      return;
-    }
-
-    c.trail.push({x: c.x, y: c.y});
-
-    ctx.beginPath();
-    ctx.moveTo(c.trail[0].x, c.trail[0].y);
-    for (let j = 1; j < c.trail.length; j++) {
-      ctx.lineTo(c.trail[j].x, c.trail[j].y);
-    }
-    ctx.strokeStyle = c.color;
-    ctx.shadowColor = c.color;
-    ctx.shadowBlur = 1;
-    ctx.lineWidth = 5;
-    ctx.stroke();
-    ctx.shadowBlur = 0;
-  }
-
-  animId = requestAnimationFrame(draw);
-}
-
-resetGame();
-
-window.addEventListener('resize', () => {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  resetGame();
-});
-</script>
-</body>
-</html>
+(()=>{'use strict';
+const canvas=document.querySelector('#gl'),fx=document.querySelector('#fx'),fctx=fx.getContext('2d'),gl=canvas.getContext('webgl',{antialias:true,alpha:false,powerPreference:'high-performance'}),$=s=>document.querySelector(s);
+if(!gl){$('#screen .panel').innerHTML='<h1>WEBGL</h1><p class="intro">Seu navegador não conseguiu iniciar o modo 3D. Atualize o navegador ou ative a aceleração de hardware.</p>';return}
+const VS=`attribute vec3 aPos;attribute vec3 aNormal;uniform mat4 uProj,uView,uModel;uniform vec3 uColor;uniform float uGlow;varying vec3 vColor;varying float vFog;varying float vLight;varying float vGlow;void main(){vec4 world=uModel*vec4(aPos,1.);vec4 eye=uView*world;gl_Position=uProj*eye;vec3 n=normalize(mat3(uModel)*aNormal);vLight=.26+.74*max(dot(n,normalize(vec3(.2,.8,.35))),0.);vColor=uColor;vFog=clamp((-eye.z-22.)/230.,0.,1.);vGlow=uGlow;}`;
+const FS=`precision mediump float;varying vec3 vColor;varying float vFog;varying float vLight;varying float vGlow;void main(){vec3 c=vColor*mix(vLight,1.25,vGlow);c+=vColor*vGlow*.6;c=mix(c,vec3(.005,.016,.03),vFog);gl_FragColor=vec4(c,1.);}`;
+const compile=(type,src)=>{const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(s));return s},prog=gl.createProgram();gl.attachShader(prog,compile(gl.VERTEX_SHADER,VS));gl.attachShader(prog,compile(gl.FRAGMENT_SHADER,FS));gl.linkProgram(prog);gl.useProgram(prog);
+const loc={pos:gl.getAttribLocation(prog,'aPos'),normal:gl.getAttribLocation(prog,'aNormal'),proj:gl.getUniformLocation(prog,'uProj'),view:gl.getUniformLocation(prog,'uView'),model:gl.getUniformLocation(prog,'uModel'),color:gl.getUniformLocation(prog,'uColor'),glow:gl.getUniformLocation(prog,'uGlow')},dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+const M={trs:(x,y,z,sx=1,sy=1,sz=1,ry=0,rx=0)=>{const cy=Math.cos(ry),sn=Math.sin(ry),cx=Math.cos(rx),sxr=Math.sin(rx);return new Float32Array([cy*sx,sxr*sn*sx,-cx*sn*sx,0,0,cx*sy,sxr*sy,0,sn*sz,-sxr*cy*sz,cx*cy*sz,0,x,y,z,1])},perspective:(fov,asp,n,f)=>{const t=1/Math.tan(fov/2),nf=1/(n-f);return new Float32Array([t/asp,0,0,0,0,t,0,0,0,0,(f+n)*nf,-1,0,0,2*f*n*nf,0])},view:(x,y,z,yaw,pitch)=>{const cy=Math.cos(yaw),sy=Math.sin(yaw),cp=Math.cos(pitch),sp=Math.sin(pitch),forward=[sy*cp,sp,-cy*cp],right=[cy,0,sy],up=[-sy*sp,cp,cy*sp];return new Float32Array([right[0],up[0],-forward[0],0,right[1],up[1],-forward[1],0,right[2],up[2],-forward[2],0,-dot(right,[x,y,z]),-dot(up,[x,y,z]),dot(forward,[x,y,z]),1])}};
+const hex=h=>{h=h.replace('#','');return[parseInt(h.slice(0,2),16)/255,parseInt(h.slice(2,4),16)/255,parseInt(h.slice(4,6),16)/255]},C={dark:hex('#06111c'),cyan:hex('#58f7ff'),cyan2:hex('#0aa8c4'),orange:hex('#ff6b18'),white:hex('#d8ffff'),road:hex('#07101a'),black:hex('#010307'),red:hex('#ff3155')};
+function mesh(data){const m={count:data.length/6,buf:gl.createBuffer()};gl.bindBuffer(gl.ARRAY_BUFFER,m.buf);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(data),gl.STATIC_DRAW);return m}
+const cube=(()=>{const d=[],face=(n,a,b,c,e)=>{for(const p of[a,b,c,a,c,e])d.push(...p,...n)};face([0,0,1],[-.5,-.5,.5],[.5,-.5,.5],[.5,.5,.5],[-.5,.5,.5]);face([0,0,-1],[.5,-.5,-.5],[-.5,-.5,-.5],[-.5,.5,-.5],[.5,.5,-.5]);face([1,0,0],[.5,-.5,.5],[.5,-.5,-.5],[.5,.5,-.5],[.5,.5,.5]);face([-1,0,0],[-.5,-.5,-.5],[-.5,-.5,.5],[-.5,.5,.5],[-.5,.5,-.5]);face([0,1,0],[-.5,.5,.5],[.5,.5,.5],[.5,.5,-.5],[-.5,.5,-.5]);face([0,-1,0],[-.5,-.5,-.5],[.5,-.5,-.5],[.5,-.5,.5],[-.5,-.5,.5]);return mesh(d)})();
+function ringMesh(n=28){const d=[];for(let i=0;i<n;i++){const a=i/n*Math.PI*2,b=(i+1)/n*Math.PI*2;for(const z of[-.08,.08]){const no=[0,0,z>0?1:-1],p=z>0?[[Math.cos(a),Math.sin(a),z],[Math.cos(b),Math.sin(b),z],[Math.cos(b)*.84,Math.sin(b)*.84,z],[Math.cos(a)*.84,Math.sin(a)*.84,z]]:[[Math.cos(b),Math.sin(b),z],[Math.cos(a),Math.sin(a),z],[Math.cos(a)*.84,Math.sin(a)*.84,z],[Math.cos(b)*.84,Math.sin(b)*.84,z]];for(const q of[p[0],p[1],p[2],p[0],p[2],p[3]])d.push(...q,...no)}}return mesh(d)}const ring=ringMesh();
+function draw(me,model,color=C.white,glow=0){gl.bindBuffer(gl.ARRAY_BUFFER,me.buf);gl.enableVertexAttribArray(loc.pos);gl.vertexAttribPointer(loc.pos,3,gl.FLOAT,false,24,0);gl.enableVertexAttribArray(loc.normal);gl.vertexAttribPointer(loc.normal,3,gl.FLOAT,false,24,12);gl.uniformMatrix4fv(loc.model,false,model);gl.uniform3fv(loc.color,color);gl.uniform1f(loc.glow,glow);gl.drawArrays(gl.TRIANGLES,0,me.count)}const box=(x,y,z,sx,sy,sz,c,g=0,ry=0,rx=0)=>draw(cube,M.trs(x,y,z,sx,sy,sz,ry,rx),c,g);
+let W=0,H=0,dpr=1;function resize(){dpr=Math.min(devicePixelRatio||1,1.65);W=Math.floor(innerWidth*dpr);H=Math.floor(innerHeight*dpr);if(canvas.width!==W||canvas.height!==H){canvas.width=fx.width=W;canvas.height=fx.height=H;gl.viewport(0,0,W,H)}}addEventListener('resize',resize);resize();gl.enable(gl.DEPTH_TEST);gl.enable(gl.CULL_FACE);gl.clearColor(.002,.007,.016,1);
+const state={running:false,paused:false,over:false,time:0,distance:0,x:0,vx:0,target:0,speed:38,boost:100,boosting:false,shake:0,flash:0};let obstacles=[],portals=[],rivals=[],particles=[],nextSpawn=65,nextPortal=110;const lanes=[-7.5,-3.75,0,3.75,7.5],rnd=(a,b)=>a+Math.random()*(b-a),choose=a=>a[Math.random()*a.length|0];
+function reset(){Object.assign(state,{running:true,paused:false,over:false,time:0,distance:0,x:0,vx:0,target:0,speed:38,boost:100,boosting:false,shake:0,flash:0});obstacles=[];portals=[];rivals=[];particles=[];nextSpawn=65;nextPortal=95;for(let i=0;i<3;i++)spawnRival(-55-i*44);$('#screen').classList.add('hidden');$('#pause').textContent='Ⅱ'}
+function spawnRival(z=-210){rivals.push({x:choose(lanes)+rnd(-.25,.25),z,speed:rnd(30,43),color:Math.random()>.5?C.orange:C.red,phase:rnd(0,6),alive:true})}function spawnObstacle(z){const count=Math.random()<.32?2:1,used=[];for(let i=0;i<count;i++){let lane;do lane=choose(lanes);while(used.includes(lane));used.push(lane);obstacles.push({x:lane,z,type:Math.random()<.72?'wall':'block',passed:false})}}function spawnPortal(z){portals.push({x:choose(lanes),z,taken:false,rot:0})}function burst(x,y,color,n=18){for(let i=0;i<n;i++)particles.push({x,y,vx:rnd(-5,5),vy:rnd(-6,2),life:rnd(.3,.8),color})}function message(t,color='#dffcff'){const m=$('#message');m.textContent=t;m.style.color=color;m.classList.add('show');clearTimeout(message.t);message.t=setTimeout(()=>m.classList.remove('show'),1100)}
+const keys={};addEventListener('keydown',e=>{keys[e.code]=true;if(['ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();if(e.code==='Space')state.boosting=true;if(e.code==='KeyP'||e.code==='Escape')togglePause();if(state.over&&(e.code==='Enter'||e.code==='Space'))reset()});addEventListener('keyup',e=>{keys[e.code]=false;if(e.code==='Space')state.boosting=false});let touchX=null;canvas.addEventListener('pointerdown',e=>{touchX=e.clientX;canvas.setPointerCapture(e.pointerId)});canvas.addEventListener('pointermove',e=>{if(touchX===null||!state.running)return;const dx=(e.clientX-touchX)/Math.max(innerWidth,320);state.target=Math.max(-8.7,Math.min(8.7,state.target+dx*21));touchX=e.clientX});canvas.addEventListener('pointerup',()=>touchX=null);canvas.addEventListener('pointercancel',()=>touchX=null);
+const boostBtn=$('#boostBtn');boostBtn.addEventListener('pointerdown',e=>{e.preventDefault();state.boosting=true;boostBtn.classList.add('active')});for(const evt of['pointerup','pointercancel'])boostBtn.addEventListener(evt,e=>{e.preventDefault();state.boosting=false;boostBtn.classList.remove('active')});$('#play').addEventListener('click',reset);$('#pause').addEventListener('click',togglePause);function togglePause(){if(!state.running||state.over)return;state.paused=!state.paused;$('#pause').textContent=state.paused?'▶':'Ⅱ';message(state.paused?'SISTEMA EM PAUSA':'CORRIDA RETOMADA')}
+function update(dt){if(!state.running||state.paused||state.over)return;state.time+=dt;let steer=(keys.ArrowRight||keys.KeyD?1:0)-(keys.ArrowLeft||keys.KeyA?1:0);if(steer)state.target=Math.max(-8.7,Math.min(8.7,state.target+steer*dt*10.5));const diff=state.target-state.x;state.vx+=(diff*13-state.vx*5.5)*dt;state.x+=state.vx*dt;const canBoost=state.boosting&&state.boost>0,targetSpeed=canBoost?62:Math.min(48,38+state.distance*.00055);state.speed+=(targetSpeed-state.speed)*dt*2.7;if(canBoost){state.boost=Math.max(0,state.boost-dt*24);state.shake=Math.max(state.shake,.08)}else state.boost=Math.min(100,state.boost+dt*5.5);const dz=state.speed*dt;state.distance+=dz;for(const o of obstacles)o.z+=dz;for(const p of portals){p.z+=dz;p.rot+=dt*1.7}for(const r of rivals){r.z+=Math.max(7,state.speed-r.speed)*dt;r.phase+=dt}nextSpawn-=dz;nextPortal-=dz;if(nextSpawn<0){spawnObstacle(-215);nextSpawn=rnd(48,76)}if(nextPortal<0){spawnPortal(-225);nextPortal=rnd(105,155)}if(rivals.length<5&&Math.random()<dt*.08)spawnRival(-210);for(const o of obstacles){if(!o.passed&&o.z<2.5&&o.z>-3&&Math.abs(o.x-state.x)<(o.type==='wall'?1.5:1.2)){crash();return}if(!o.passed&&o.z>4){o.passed=true;state.distance+=8}}for(const p of portals)if(!p.taken&&Math.abs(p.z)<3.2&&Math.abs(p.x-state.x)<1.8){p.taken=true;state.boost=Math.min(100,state.boost+35);state.distance+=35;state.flash=.35;burst(innerWidth*.5,innerHeight*.42,'#58f7ff',25);message('PORTAL DE ENERGIA +35')}for(const r of rivals)if(r.alive&&Math.abs(r.z)<3.8&&Math.abs(r.x-state.x)<1.4){crash();return}obstacles=obstacles.filter(o=>o.z<14);portals=portals.filter(p=>p.z<14&&!p.taken);rivals=rivals.filter(r=>r.z<15&&r.z>-260);state.shake=Math.max(0,state.shake-dt);state.flash=Math.max(0,state.flash-dt);for(const p of particles){p.life-=dt;p.x+=p.vx;p.y+=p.vy;p.vy+=dt*9}particles=particles.filter(p=>p.life>0);$('#score').textContent=String(Math.floor(state.distance)).padStart(5,'0');$('#speed').textContent=Math.floor(state.speed*8.2);$('#boostFill').style.width=state.boost+'%';$('#boostText').textContent=Math.ceil(state.boost)+'%'}
+function crash(){state.over=true;state.shake=.6;state.flash=.55;burst(innerWidth*.5,innerHeight*.5,'#ff6b18',42);setTimeout(()=>{const s=$('#screen');s.classList.remove('hidden');s.querySelector('.panel').innerHTML=`<div class="final">CONEXÃO INTERROMPIDA</div><h1>${Math.floor(state.distance)}<span>METROS</span></h1><p class="intro">A Grid não perdoa. Você atingiu ${Math.floor(state.speed*8.2)} km/h.</p><button class="play" id="retry"><span>REINICIAR CORRIDA</span></button>`;$('#retry').addEventListener('click',reset)},600)}
+function drawBike(x,z,color){box(x,.5,z,1.05,.34,2.65,C.black);box(x,.72,z-.28,.18,.18,1.8,color,1);box(x,.5,z+.75,.86,.13,.35,color,1);box(x,.46,z-1.02,.62,.62,.14,C.black,0,0,Math.PI/2);box(x,.46,z+1.02,.62,.62,.14,C.black,0,0,Math.PI/2);box(x,.95,z-.15,.8,.06,.06,color,1,-.2)}
+function drawWorld(){gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);const shake=state.shake?rnd(-state.shake,state.shake):0,lean=Math.max(-.08,Math.min(.08,-state.vx*.012));gl.uniformMatrix4fv(loc.proj,false,M.perspective(Math.PI/2.55,W/H,.08,330));gl.uniformMatrix4fv(loc.view,false,M.view(state.x+shake,2.25+Math.sin(state.time*12)*.015,3.2,lean,Math.sin(state.time*.7)*.006));box(0,-.18,-115,22,.25,260,C.road);const scroll=state.distance%10;for(let z=10-scroll;z>-245;z-=10)box(0,.002,z,21.8,.018,.035,C.cyan2,.72);for(let x=-11;x<=11;x+=2.75)box(x,.008,-115,.026,.025,260,C.cyan2,.5);box(-11,.25,-115,.1,.5,260,C.cyan,.9);box(11,.25,-115,.1,.5,260,C.cyan,.9);const worldStep=Math.floor(state.distance/18);for(let z=-15;z>-250;z-=18){const iz=Math.floor(-z/18)+worldStep;for(const side of[-1,1]){const seed=Math.abs(Math.sin(iz*91.17+side*8.2)),h=4+seed*17,x=side*(14+seed*7);box(x,h/2-.1,z,3+seed*5,h,5+seed*4,C.dark);box(x-side*(1.53+seed*2.5),h*.58,z-.1,.035,h*.28,5.2+seed*4,C.cyan2,.7)}}for(let z=-35-(state.distance*1.1%60);z>-260;z-=60){box(-10.7,4.5,z,.16,9,.18,C.cyan,.8);box(10.7,4.5,z,.16,9,.18,C.cyan,.8);box(0,8.9,z,21.5,.14,.18,C.cyan,.8)}for(const o of obstacles){if(o.z>12||o.z<-250)continue;if(o.type==='wall'){box(o.x,1.05,o.z,2.7,2.1,.42,C.dark);box(o.x,1.05,o.z-.23,2.5,1.9,.035,C.orange,1);box(o.x,1.05,o.z-.27,1.65,.08,.04,C.white,1)}else{box(o.x,.65,o.z,2.05,1.3,2.1,C.dark);box(o.x,.67,o.z-1.08,1.65,.8,.04,C.red,1)}}for(const p of portals){if(p.z>12||p.z<-250)continue;draw(ring,M.trs(p.x,2.25,p.z,2.25,2.25,2.25),C.cyan,1);box(p.x,2.25,p.z,.035,3.25,.035,C.white,1)}for(const r of rivals){if(r.z>12||r.z<-250)continue;box(r.x,.25,r.z-7,.07,.2,14,r.color,.95);drawBike(r.x,r.z,r.color)}box(state.x,-.12,1.12,1.48,.35,2.6,C.black,0,lean);box(state.x,.08,.62,.18,.09,1.35,C.cyan,1,lean);box(state.x-1.02,.42,.68,1.2,.075,.08,C.cyan,.8,lean,-.12);box(state.x+1.02,.42,.68,1.2,.075,.08,C.cyan,.8,lean,.12);box(state.x-1.56,.52,.7,.5,.16,.16,C.dark,0,lean);box(state.x+1.56,.52,.7,.5,.16,.16,C.dark,0,lean);box(state.x,.18,.32,.92,.065,.55,C.white,1,lean)}
+function drawFx(){fctx.clearRect(0,0,W,H);fctx.save();fctx.scale(dpr,dpr);const w=W/dpr,h=H/dpr;if(state.running&&!state.paused){const power=Math.max(0,(state.speed-38)/24);fctx.lineWidth=1;for(let i=0;i<22*power;i++){const x=rnd(0,w),y=rnd(h*.32,h),len=rnd(8,55)*power;fctx.strokeStyle=`rgba(88,247,255,${rnd(.06,.28)})`;fctx.beginPath();fctx.moveTo(x,y);fctx.lineTo(x+(x-w/2)*.025*power,y+len);fctx.stroke()}}for(const p of particles){fctx.fillStyle=p.color;fctx.globalAlpha=Math.min(1,p.life*2);fctx.fillRect(p.x-2,p.y-2,4,4)}fctx.globalAlpha=1;if(state.flash){fctx.fillStyle=`rgba(${state.over?'255,85,20':'88,247,255'},${state.flash*.9})`;fctx.fillRect(0,0,w,h)}fctx.restore()}
+let last=performance.now();function frame(now){const dt=Math.min(.033,(now-last)/1000);last=now;update(dt);drawWorld();drawFx();requestAnimationFrame(frame)}requestAnimationFrame(frame);spawnObstacle(-90);spawnPortal(-135);
+})();
+</script></body></html>
