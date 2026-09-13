@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="theme-color" content="#110b20" />
+  <title>Peidão: Ascensão Gasosa</title>
+  <meta name="description" content="Coma coisas duvidosas, evolua o intestino e domine o mundo no impulso do peido." />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <main id="game-shell">
+    <canvas id="game" aria-label="Peidão: Ascensão Gasosa"></canvas>
+    <noscript>Você precisa ativar o JavaScript para liberar o poder gasoso.</noscript>
+
+    <header class="hud" aria-live="polite">
+      <div class="brand"><span class="brand-mark">P</span><span>PEIDÃO</span></div>
+      <div class="stage-pill"><small>FASE</small><strong id="stage-name">—</strong></div>
+      <button id="mute" class="icon-button" aria-label="Ativar ou desativar som">♪</button>
+      <button id="pause" class="icon-button" aria-label="Pausar jogo">Ⅱ</button>
+    </header>
+
+    <section class="meters">
+      <div class="meter-card">
+        <div class="meter-label"><span>PRESSÃO</span><b id="gas-value">0%</b></div>
+        <div class="meter gas"><i id="gas-bar"></i></div>
+      </div>
+      <div class="meter-card">
+        <div class="meter-label"><span>DOMÍNIO</span><b id="domination-value">0/0</b></div>
+        <div class="meter domination"><i id="domination-bar"></i></div>
+      </div>
+      <div class="evolution" id="evolution">INTESTINO I</div>
+    </section>
+
+    <aside id="quest" class="quest">
+      <small>OBJETIVO</small>
+      <strong id="quest-title">Acorde o intestino</strong>
+      <span id="quest-detail">Colete comida e domine os totens fedorentos.</span>
+    </aside>
+
+    <div id="toast" class="toast" role="status"></div>
+    <div id="boss-bar" class="boss-bar hidden">
+      <span id="boss-name">CHEFÃO</span>
+      <div><i id="boss-health"></i></div>
+    </div>
+
+    <section id="start-screen" class="screen visible">
+      <div class="screen-card hero-card">
+        <p class="eyebrow">UMA JORNADA INTESTINAL</p>
+        <h1>PEIDÃO:<br><em>ASCENSÃO GASOSA</em></h1>
+        <p>Coma o duvidoso. Acumule pressão. Use o recuo do peido para alcançar o impossível — e dominar tudo.</p>
+        <button id="start-button" class="primary-button">SOLTAR O PRIMEIRO →</button>
+        <div class="controls-hint">
+          <span><kbd>A D</kbd> mover</span>
+          <span><kbd>W</kbd> pular</span>
+          <span><kbd>ESPAÇO</kbd> peidar</span>
+        </div>
+        <p class="tiny">Fones recomendados. Bom senso, nem tanto.</p>
+      </div>
+    </section>
+
+    <section id="pause-screen" class="screen">
+      <div class="screen-card compact">
+        <p class="eyebrow">RESPIRA FUNDO</p>
+        <h2>JOGO PAUSADO</h2>
+        <button id="resume-button" class="primary-button">CONTINUAR</button>
+        <button id="restart-button" class="secondary-button">RECOMEÇAR FASE</button>
+      </div>
+    </section>
+
+    <section id="level-screen" class="screen">
+      <div class="screen-card compact">
+        <p class="eyebrow">TERRITÓRIO DOMINADO</p>
+        <h2 id="level-title">O ESGOTO CEDEU</h2>
+        <p id="level-summary">Seu odor agora é patrimônio local.</p>
+        <div class="score-row"><span>Tempo <b id="level-time">0:00</b></span><span>Comida <b id="level-food">0</b></span></div>
+        <button id="next-button" class="primary-button">PRÓXIMA NOJEIRA →</button>
+      </div>
+    </section>
+
+    <section id="game-over-screen" class="screen">
+      <div class="screen-card compact">
+        <p class="eyebrow">DEU RUIM</p>
+        <h2>O GÁS ACABOU</h2>
+        <p>Até lendas intestinais tropeçam.</p>
+        <button id="retry-button" class="primary-button">TENTAR DE NOVO</button>
+      </div>
+    </section>
+
+    <section id="ending-screen" class="screen">
+      <div class="screen-card hero-card">
+        <p class="eyebrow">A PROFECIA SE CUMPRIU</p>
+        <h1>REI DO<br><em>FEDOR</em></h1>
+        <p>Do queijo tímido ao banquete proibido. O mundo curvou-se diante do seu poder gasoso.</p>
+        <div class="score-row"><span>Tempo total <b id="final-time">0:00</b></span><span>Comidas <b id="final-food">0</b></span></div>
+        <button id="again-button" class="primary-button">DOMINAR DE NOVO</button>
+      </div>
+    </section>
+
+    <nav class="mobile-controls" aria-label="Controles do jogo">
+      <div class="move-pad">
+        <button data-control="left" aria-label="Mover para esquerda">◀</button>
+        <button data-control="right" aria-label="Mover para direita">▶</button>
+      </div>
+      <div class="action-pad">
+        <button data-control="jump" class="jump" aria-label="Pular">↑<small>PULA</small></button>
+        <button data-control="fart" class="fart" aria-label="Peidar">💨<small>PEIDA</small></button>
+      </div>
+    </nav>
+
+    <div class="loading" id="loading"><span></span><b>FERMENTANDO...</b></div>
+  </main>
+  <script type="module" src="./game.js"></script>
+</body>
+</html>
