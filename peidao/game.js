@@ -10,7 +10,15 @@ const ui = {
   gameOver: document.querySelector('#game-over-screen'), ending: document.querySelector('#ending-screen')
 };
 
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'high-performance' });
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'high-performance' });
+} catch (error) {
+  const loading = document.querySelector('#loading');
+  loading.innerHTML = '<b>WEBGL NÃO DISPONÍVEL</b><small>Ative a aceleração gráfica do navegador ou abra em outro aparelho.</small>';
+  loading.classList.add('failed');
+  throw error;
+}
 renderer.setPixelRatio(Math.min(devicePixelRatio, 1.75));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
