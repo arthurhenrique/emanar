@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#08151a" />
+  <meta name="description" content="Voe, desvie e sobreviva na cozinha. Um endless runner WebGL feito para celular e computador." />
+  <title>Mosca na Cozinha</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%2308151a'/%3E%3Cellipse cx='32' cy='35' rx='10' ry='15' fill='%23d8ff45'/%3E%3Cellipse cx='20' cy='24' rx='12' ry='7' fill='%238ae6f2' fill-opacity='.8' transform='rotate(-25 20 24)'/%3E%3Cellipse cx='44' cy='24' rx='12' ry='7' fill='%238ae6f2' fill-opacity='.8' transform='rotate(25 44 24)'/%3E%3Ccircle cx='28' cy='26' r='3' fill='%2308151a'/%3E%3Ccircle cx='36' cy='26' r='3' fill='%2308151a'/%3E%3C/svg%3E" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap');
+    :root { color-scheme: dark; --lime:#d8ff45; --ink:#071317; --cyan:#8ae6f2; --paper:#eef7ec; }
+    * { box-sizing:border-box; }
+    html,body { width:100%; height:100%; margin:0; overflow:hidden; background:var(--ink); font-family:"Space Grotesk",system-ui,sans-serif; touch-action:none; }
+    button { font:inherit; }
+    #game { position:fixed; inset:0; width:100%; height:100%; display:block; background:#071317; }
+    .grain { position:fixed; inset:0; pointer-events:none; opacity:.08; z-index:2; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.42'/%3E%3C/svg%3E"); mix-blend-mode:soft-light; }
+    .hud { position:fixed; inset:0; z-index:3; pointer-events:none; padding:max(20px,env(safe-area-inset-top)) max(18px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(18px,env(safe-area-inset-left)); display:flex; flex-direction:column; justify-content:space-between; }
+    .topbar { display:flex; justify-content:space-between; align-items:flex-start; }
+    .brand { display:flex; gap:11px; align-items:center; text-transform:uppercase; font-size:12px; letter-spacing:.18em; font-weight:700; color:rgba(238,247,236,.72); }
+    .fly-mark { width:30px; height:30px; display:grid; place-items:center; border:1px solid rgba(216,255,69,.38); border-radius:50%; color:var(--lime); font-size:16px; background:rgba(7,19,23,.44); backdrop-filter:blur(8px); }
+    .score-wrap { text-align:right; }
+    .score { color:var(--paper); font:500 clamp(30px,7vw,58px)/.9 "DM Mono",monospace; letter-spacing:-.07em; text-shadow:0 4px 20px rgba(0,0,0,.35); }
+    .score-label { color:var(--lime); font:500 11px/1 "DM Mono",monospace; letter-spacing:.16em; text-transform:uppercase; margin-top:8px; }
+    .bottom { display:flex; justify-content:space-between; align-items:flex-end; color:rgba(238,247,236,.72); font:500 12px/1.35 "DM Mono",monospace; letter-spacing:.05em; }
+    .speed { padding:9px 12px; border-left:2px solid var(--lime); background:linear-gradient(90deg,rgba(7,19,23,.72),transparent); }
+    .pause { pointer-events:auto; border:1px solid rgba(238,247,236,.25); background:rgba(7,19,23,.45); color:var(--paper); width:42px; height:42px; border-radius:50%; cursor:pointer; backdrop-filter:blur(8px); transition:.2s ease; }
+    .pause:hover { border-color:var(--lime); color:var(--lime); transform:scale(1.05); }
+    .screen { position:fixed; inset:0; z-index:5; display:grid; place-items:center; padding:24px; background:linear-gradient(180deg,rgba(4,13,16,.18),rgba(4,13,16,.74)); transition:opacity .35s ease,visibility .35s ease; }
+    .screen.hidden { opacity:0; visibility:hidden; pointer-events:none; }
+    .panel { width:min(520px,100%); padding:clamp(26px,7vw,54px); background:rgba(7,19,23,.76); border:1px solid rgba(138,230,242,.2); box-shadow:0 28px 90px rgba(0,0,0,.4); backdrop-filter:blur(16px); position:relative; overflow:hidden; }
+    .panel:before { content:""; position:absolute; width:150px; height:150px; right:-80px; top:-80px; border:28px solid rgba(216,255,69,.07); border-radius:50%; }
+    .eyebrow { color:var(--lime); font:500 12px/1 "DM Mono",monospace; letter-spacing:.18em; text-transform:uppercase; }
+    h1 { margin:17px 0 16px; color:var(--paper); font-size:clamp(48px,13vw,82px); line-height:.82; letter-spacing:-.075em; text-transform:uppercase; }
+    h1 span { display:block; color:var(--cyan); }
+    .lead { max-width:390px; margin:0 0 26px; color:rgba(238,247,236,.7); font-size:16px; line-height:1.5; }
+    .controls { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:28px; }
+    .control { border-top:1px solid rgba(238,247,236,.18); padding-top:10px; color:rgba(238,247,236,.6); font:400 12px/1.4 "DM Mono",monospace; }
+    .control b { display:block; color:var(--paper); margin-bottom:3px; font-family:"Space Grotesk",sans-serif; font-size:14px; }
+    .play { width:100%; border:0; padding:16px 20px; color:#142006; background:var(--lime); text-transform:uppercase; letter-spacing:.12em; font-weight:700; cursor:pointer; box-shadow:6px 6px 0 #7ca92b; transition:.12s ease; }
+    .play:hover { transform:translate(-2px,-2px); box-shadow:8px 8px 0 #7ca92b; }
+    .play:active { transform:translate(4px,4px); box-shadow:2px 2px 0 #7ca92b; }
+    #gameover h1 { font-size:clamp(42px,11vw,70px); }
+    .stats { display:flex; gap:24px; margin:22px 0 28px; }
+    .stat { flex:1; color:rgba(238,247,236,.6); font:400 11px/1.3 "DM Mono",monospace; text-transform:uppercase; letter-spacing:.1em; }
+    .stat strong { display:block; color:var(--paper); font-size:24px; margin-bottom:4px; letter-spacing:-.04em; }
+    .pickup-pop { position:fixed; left:50%; top:28%; z-index:4; color:var(--lime); font:700 28px/1 "Space Grotesk",sans-serif; transform:translate(-50%,-50%) scale(.7); opacity:0; pointer-events:none; text-shadow:0 4px 18px rgba(0,0,0,.5); }
+    .pickup-pop.show { animation:pop .6s ease-out; }
+    @keyframes pop { 0%{opacity:0;transform:translate(-50%,-30%) scale(.6)} 25%{opacity:1;transform:translate(-50%,-50%) scale(1.15)} 100%{opacity:0;transform:translate(-50%,-85%) scale(1)} }
+    @media (max-width:600px) { .brand span:last-child{display:none}.panel{border-radius:2px}.bottom{font-size:11px}.controls{grid-template-columns:1fr}.control:nth-child(2){display:none} }
+    @media (prefers-reduced-motion:reduce) { .play,.pause,.screen{transition:none}.pickup-pop.show{animation-duration:.01ms} }
+  </style>
+</head>
+<body>
+  <canvas id="game" aria-label="Jogo Mosca na Cozinha"></canvas>
+  <div class="grain"></div>
+  <div class="hud" aria-live="polite">
+    <div class="topbar">
+      <div class="brand"><span class="fly-mark">✣</span><span>Mosca na Cozinha</span></div>
+      <div class="score-wrap"><div class="score" id="score">0000</div><div class="score-label">migalhas <span id="crumbs">0</span></div></div>
+    </div>
+    <div class="bottom"><div class="speed"><span id="speed">1.0×</span><br>velocidade</div><button class="pause" id="pause" aria-label="Pausar jogo">Ⅱ</button></div>
+  </div>
+  <div class="pickup-pop" id="pickup">+1 MIGALHA</div>
+
+  <section class="screen" id="start">
+    <div class="panel">
+      <div class="eyebrow">A cozinha fecha em 3 minutos</div>
+      <h1>Mosca <span>na cozinha</span></h1>
+      <p class="lead">Voe entre pratos, canecas e talheres. Pegue as migalhas. E não vire ingrediente.</p>
+      <div class="controls">
+        <div class="control"><b>No celular</b>Deslize para os lados, para cima ou para baixo.</div>
+        <div class="control"><b>No computador</b>Use as setas ou W A S D.</div>
+      </div>
+      <button class="play" id="play">Começar o voo</button>
+    </div>
+  </section>
+
+  <section class="screen hidden" id="gameover">
+    <div class="panel">
+      <div class="eyebrow">A mosca foi de base</div>
+      <h1>Virou <span>tempero.</span></h1>
+      <div class="stats"><div class="stat"><strong id="finalScore">0</strong>pontos</div><div class="stat"><strong id="bestScore">0</strong>recorde</div><div class="stat"><strong id="finalCrumbs">0</strong>migalhas</div></div>
+      <button class="play" id="again">Voar de novo</button>
+    </div>
+  </section>
+
+<script>
+(() => {
+  'use strict';
+  const canvas=document.getElementById('game'), gl=canvas.getContext('webgl',{antialias:true,alpha:false});
+  if(!gl){document.getElementById('start').querySelector('.lead').textContent='Seu navegador não oferece WebGL. Tente abrir no Chrome, Safari ou Firefox atualizado.';return;}
+  const $=id=>document.getElementById(id);
+  const ui={start:$('start'),over:$('gameover'),score:$('score'),crumbs:$('crumbs'),speed:$('speed'),pickup:$('pickup'),pause:$('pause')};
+
+  const V=`attribute vec3 p;attribute vec3 n;uniform mat4 mvp;uniform mat4 model;varying vec3 vn;varying vec3 wp;void main(){vec4 w=model*vec4(p,1.);wp=w.xyz;vn=mat3(model)*n;gl_Position=mvp*vec4(p,1.);}`;
+  const F=`precision mediump float;uniform vec3 color;uniform vec3 fog;uniform float alpha;varying vec3 vn;varying vec3 wp;void main(){float l=max(.18,dot(normalize(vn),normalize(vec3(-.5,.9,.35))));float d=clamp((length(wp)-12.)/50.,0.,1.);gl_FragColor=vec4(mix(color*l,fog,d),alpha);}`;
+  const shader=(type,src)=>{const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(s));return s};
+  const program=gl.createProgram();gl.attachShader(program,shader(gl.VERTEX_SHADER,V));gl.attachShader(program,shader(gl.FRAGMENT_SHADER,F));gl.linkProgram(program);gl.useProgram(program);
+  const loc={p:gl.getAttribLocation(program,'p'),n:gl.getAttribLocation(program,'n'),mvp:gl.getUniformLocation(program,'mvp'),model:gl.getUniformLocation(program,'model'),color:gl.getUniformLocation(program,'color'),fog:gl.getUniformLocation(program,'fog'),alpha:gl.getUniformLocation(program,'alpha')};
+  gl.enable(gl.DEPTH_TEST);gl.enable(gl.CULL_FACE);gl.clearColor(.027,.075,.09,1);gl.uniform3f(loc.fog,.027,.075,.09);
+
+  const M={
+    id:()=>[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1],
+    mul:(a,b)=>{let o=Array(16).fill(0);for(let c=0;c<4;c++)for(let r=0;r<4;r++)for(let k=0;k<4;k++)o[c*4+r]+=a[k*4+r]*b[c*4+k];return o},
+    translate:(x,y,z)=>[1,0,0,0,0,1,0,0,0,1,0,x,y,z,1],scale:(x,y,z)=>[x,0,0,0,0,y,0,0,0,0,z,0,0,0,0,1],
+    rx:a=>[1,0,0,0,0,Math.cos(a),Math.sin(a),0,0,-Math.sin(a),Math.cos(a),0,0,0,0,1],
+    ry:a=>[Math.cos(a),0,-Math.sin(a),0,0,1,0,0,Math.sin(a),0,Math.cos(a),0,0,0,0,1],
+    rz:a=>[Math.cos(a),Math.sin(a),0,0,-Math.sin(a),Math.cos(a),0,0,0,0,1,0,0,0,0,1],
+    perspective:(f,a,n,z)=>{let t=1/Math.tan(f/2),q=1/(n-z);return[t/a,0,0,0,0,t,0,0,0,0,(z+n)*q,-1,0,0,2*z*n*q,0]},
+    look:(e,c,u)=>{let zx=e[0]-c[0],zy=e[1]-c[1],zz=e[2]-c[2],zl=Math.hypot(zx,zy,zz);zx/=zl;zy/=zl;zz/=zl;let xx=u[1]*zz-u[2]*zy,xy=u[2]*zx-u[0]*zz,xz=u[0]*zy-u[1]*zx,xl=Math.hypot(xx,xy,xz);xx/=xl;xy/=xl;xz/=xl;let yx=zy*xz-zz*xy,yy=zz*xx-zx*xz,yz=zx*xy-zy*xx;return[xx,yx,zx,0,xy,yy,zy,0,xz,yz,zz,0,-xx*e[0]-xy*e[1]-xz*e[2],-yx*e[0]-yy*e[1]-yz*e[2],-zx*e[0]-zy*e[1]-zz*e[2],1]}
+  };
+  const mesh=(verts,norms,idx)=>{const b=gl.createBuffer(),nb=gl.createBuffer(),ib=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(verts),gl.STATIC_DRAW);gl.bindBuffer(gl.ARRAY_BUFFER,nb);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(norms),gl.STATIC_DRAW);gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ib);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Uint16Array(idx),gl.STATIC_DRAW);return{b,nb,ib,count:idx.length}};
+  const cube=(()=>{let v=[],n=[],i=[],faces=[[[0,0,1],[-1,-1,1],[1,-1,1],[1,1,1],[-1,1,1]],[[0,0,-1],[1,-1,-1],[-1,-1,-1],[-1,1,-1],[1,1,-1]],[[1,0,0],[1,-1,1],[1,-1,-1],[1,1,-1],[1,1,1]],[[-1,0,0],[-1,-1,-1],[-1,-1,1],[-1,1,1],[-1,1,-1]],[[0,1,0],[-1,1,1],[1,1,1],[1,1,-1],[-1,1,-1]],[[0,-1,0],[-1,-1,-1],[1,-1,-1],[1,-1,1],[-1,-1,1]]];faces.forEach((f,k)=>{let o=k*4;for(let j=1;j<5;j++){v.push(...f[j]);n.push(...f[0])}i.push(o,o+1,o+2,o,o+2,o+3)});return mesh(v,n,i)})();
+  const sphere=(()=>{let v=[],n=[],i=[],s=12,r=8;for(let y=0;y<=r;y++){let p=y/r*Math.PI;for(let x=0;x<=s;x++){let t=x/s*Math.PI*2,X=Math.sin(p)*Math.cos(t),Y=Math.cos(p),Z=Math.sin(p)*Math.sin(t);v.push(X,Y,Z);n.push(X,Y,Z)}}for(let y=0;y<r;y++)for(let x=0;x<s;x++){let a=y*(s+1)+x,b=a+s+1;i.push(a,b,a+1,b,b+1,a+1)}return mesh(v,n,i)})();
+  const draw=(me,pos,sc,col,rot=[0,0,0],alpha=1)=>{let model=M.mul(M.translate(...pos),M.mul(M.rz(rot[2]),M.mul(M.ry(rot[1]),M.mul(M.rx(rot[0]),M.scale(...sc)))));gl.uniformMatrix4fv(loc.model,false,model);gl.uniformMatrix4fv(loc.mvp,false,M.mul(vp,model));gl.uniform3fv(loc.color,col);gl.uniform1f(loc.alpha,alpha);gl.bindBuffer(gl.ARRAY_BUFFER,me.b);gl.enableVertexAttribArray(loc.p);gl.vertexAttribPointer(loc.p,3,gl.FLOAT,false,0,0);gl.bindBuffer(gl.ARRAY_BUFFER,me.nb);gl.enableVertexAttribArray(loc.n);gl.vertexAttribPointer(loc.n,3,gl.FLOAT,false,0,0);gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,me.ib);gl.drawElements(gl.TRIANGLES,me.count,gl.UNSIGNED_SHORT,0)};
+
+  let vp,playing=false,paused=false,last=0,score=0,crumbs=0,speed=12,distance=0,lane=1,targetLane=1,height=1.7,targetHeight=1.7,shake=0,objects=[],particles=[];
+  const colors={counter:[.31,.36,.34],edge:[.72,.77,.67],tile:[.12,.22,.23],grout:[.04,.1,.11],wood:[.45,.22,.1],lime:[.72,.95,.1],fly:[.09,.07,.045],wing:[.4,.85,.9],white:[.86,.89,.8],red:[.75,.13,.08],yellow:[.95,.65,.08],blue:[.08,.35,.45],steel:[.45,.56,.57],sponge:[.7,.82,.1]};
+  const lanes=[-3,0,3];
+  const obstacleTypes=['mug','toast','sponge','fork','towel'];
+  const spawnRow=z=>{let safe=Math.floor(Math.random()*3),count=Math.random()<.35?2:1;for(let k=0;k<count;k++){let l=(safe+1+k)%3;objects.push({kind:'obstacle',type:obstacleTypes[Math.floor(Math.random()*obstacleTypes.length)],lane:l,z,y:objectsY(obstacleTypes[k])})}if(Math.random()<.9){let l=safe;for(let j=0;j<3;j++)objects.push({kind:'crumb',lane:l,z:z-j*2.2,y:Math.random()<.25?3.2:1.7,spin:Math.random()*6})}};
+  const objectsY=()=>0;
+  const reset=()=>{score=0;crumbs=0;speed=12;distance=0;lane=targetLane=1;height=targetHeight=1.7;objects=[];particles=[];for(let z=-18;z>-85;z-=13)spawnRow(z);updateUI()};
+  const updateUI=()=>{ui.score.textContent=Math.floor(score).toString().padStart(4,'0');ui.crumbs.textContent=crumbs;ui.speed.textContent=(speed/12).toFixed(1)+'×'};
+  const startGame=()=>{reset();playing=true;paused=false;ui.start.classList.add('hidden');ui.over.classList.add('hidden');ui.pause.textContent='Ⅱ';last=performance.now()};
+  const gameOver=()=>{playing=false;shake=.6;let best=Math.max(Number(localStorage.flyBest||0),Math.floor(score));localStorage.flyBest=best;$('finalScore').textContent=Math.floor(score);$('bestScore').textContent=best;$('finalCrumbs').textContent=crumbs;setTimeout(()=>ui.over.classList.remove('hidden'),350)};
+  const move=(dx,dy)=>{if(!playing||paused)return;if(dx)targetLane=Math.max(0,Math.min(2,targetLane+dx));if(dy>0)targetHeight=3.2;if(dy<0)targetHeight=.78};
+  $('play').onclick=startGame;$('again').onclick=startGame;ui.pause.onclick=()=>{if(!playing)return;paused=!paused;ui.pause.textContent=paused?'▶':'Ⅱ';last=performance.now()};
+  addEventListener('keydown',e=>{if(['ArrowLeft','a','A'].includes(e.key))move(-1,0);if(['ArrowRight','d','D'].includes(e.key))move(1,0);if(['ArrowUp','w','W'].includes(e.key))move(0,1);if(['ArrowDown','s','S'].includes(e.key))move(0,-1);if(e.key===' '){e.preventDefault();ui.pause.click()}if(e.key==='Enter'&&!playing)startGame()});
+  addEventListener('keyup',e=>{if(['ArrowUp','w','W','ArrowDown','s','S'].includes(e.key))targetHeight=1.7});
+  let touch=null;canvas.addEventListener('pointerdown',e=>{touch={x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId)});canvas.addEventListener('pointerup',e=>{if(!touch)return;let dx=e.clientX-touch.x,dy=e.clientY-touch.y;if(Math.max(Math.abs(dx),Math.abs(dy))>25){if(Math.abs(dx)>Math.abs(dy))move(dx>0?1:-1,0);else{move(0,dy<0?1:-1);setTimeout(()=>{targetHeight=1.7},430)}}touch=null});
+
+  function resize(){let d=Math.min(devicePixelRatio||1,2),w=innerWidth,h=innerHeight;if(canvas.width!==w*d||canvas.height!==h*d){canvas.width=w*d;canvas.height=h*d;canvas.style.width=w+'px';canvas.style.height=h+'px';gl.viewport(0,0,canvas.width,canvas.height)}vp=M.mul(M.perspective(1.0,canvas.width/canvas.height,.1,100),M.look([shake?Math.random()*.15:0,5.1,8.5],[0,1.5,-10],[0,1,0]))}
+  function kitchen(){
+    draw(cube,[0,-.48,-25],[7.3,.5,42],colors.counter);
+    draw(cube,[-7.2,4.1,-28],[.15,5,44],colors.tile);draw(cube,[7.2,4.1,-28],[.15,5,44],colors.tile);
+    for(let z=2;z>-68;z-=5){draw(cube,[-6.98,.15,z],[.12,.13,2.25],colors.edge);draw(cube,[6.98,.15,z],[.12,.13,2.25],colors.edge)}
+    for(let z=0;z>-70;z-=7){draw(cube,[-6.9,4,z],[.08,4.5,.045],colors.grout);draw(cube,[6.9,4,z],[.08,4.5,.045],colors.grout)}
+    for(let y=.8;y<8;y+=2.2){draw(cube,[-6.9,y,-30],[.08,.035,38],colors.grout);draw(cube,[6.9,y,-30],[.08,.035,38],colors.grout)}
+    for(let z=2;z>-75;z-=8)draw(cube,[0,-.01,z],[6.8,.035,.025],colors.edge);
+    draw(cube,[0,8,-40],[7,1,10],colors.wood);
+  }
+  function fly(t){let x=-3+lane*3,bob=Math.sin(t*16)*.07;draw(sphere,[x,height+bob,1.2],[.36,.3,.5],colors.fly,[.1,0,0]);draw(sphere,[x,height+bob+.02,.78],[.29,.27,.3],[.9,.9,.12]);draw(sphere,[x-.17,height+bob+.16,.57],[.12,.12,.12],colors.red);draw(sphere,[x+.17,height+bob+.16,.57],[.12,.12,.12],colors.red);let flap=Math.sin(t*42)*.45;draw(sphere,[x-.38,height+bob+.18,1.15],[.42,.045,.72],colors.wing,[0,-.25,-.35+flap]);draw(sphere,[x+.38,height+bob+.18,1.15],[.42,.045,.72],colors.wing,[0,.25,.35-flap]);
+    for(let j=-1;j<=1;j+=2){draw(cube,[x+j*.26,height-.18,1.15],[.025,.35,.025],colors.fly,[0,0,j*.6]);draw(cube,[x+j*.28,height-.2,.95],[.025,.3,.025],colors.fly,[0,0,j*.9])}
+  }
+  function renderObject(o,t){let x=lanes[o.lane],z=o.z;if(o.kind==='crumb'){let y=o.y+Math.sin(t*5+o.spin)*.14,r=t*2+o.spin;draw(cube,[x,y,z],[.25,.25,.25],colors.lime,[r*.7,r,r*.3]);return}
+    if(o.type==='mug'){draw(cube,[x,.7,z],[1.0,.72,1],colors.blue);draw(cube,[x+1.05,.8,z],[.18,.55,.5],colors.blue);draw(cube,[x,.72,z],[.68,.76,.68],[.2,0,0],colors.white)}
+    if(o.type==='toast'){draw(cube,[x,.85,z],[1.15,.85,.32],colors.yellow,[0,0,.08]);draw(cube,[x,1.0,z-.34],[.88,.6,.035],colors.wood)}
+    if(o.type==='sponge'){draw(cube,[x,.38,z],[1.25,.38,.75],colors.sponge);draw(cube,[x,.08,z],[1.27,.1,.77],colors.blue)}
+    if(o.type==='fork'){draw(cube,[x,.12,z],[.18,.09,1.5],colors.steel);for(let j=-1.5;j<=1.5;j++)draw(cube,[x+j*.28,.14,z-1.55],[.07,.08,.65],colors.steel)}
+    if(o.type==='towel'){draw(cube,[x,2.8,z],[1.35,.82,.16],colors.red,[0,0,.04]);draw(cube,[x,3.72,z],[1.5,.12,.22],colors.steel)}
+  }
+  function update(dt,t){if(!playing||paused)return;score+=dt*speed*.72;speed=Math.min(25,12+distance*.014);distance+=dt*speed;lane+=(targetLane-lane)*Math.min(1,dt*12);height+=(targetHeight-height)*Math.min(1,dt*10);if(targetHeight!==1.7)targetHeight+=(1.7-targetHeight)*dt*1.8;
+    for(let o of objects){o.z+=dt*speed;if(o.z>7)o.dead=true;if(o.z>-1.2&&o.z<2.2&&Math.abs(lanes[o.lane]-(-3+lane*3))<1.05){if(o.kind==='crumb'&&Math.abs(o.y-height)<1){o.dead=true;crumbs++;score+=30;ui.pickup.classList.remove('show');void ui.pickup.offsetWidth;ui.pickup.classList.add('show');for(let k=0;k<9;k++)particles.push({x:lanes[o.lane],y:o.y,z:o.z,vx:(Math.random()-.5)*3,vy:Math.random()*3,vz:(Math.random()-.5)*2,life:1})}else if(o.kind==='obstacle'){let hit=o.type==='towel'?height>1.15:height<(o.type==='mug'||o.type==='toast'?2.25:o.type==='sponge'?1.35:.85);if(hit)gameOver()}}}
+    objects=objects.filter(o=>!o.dead);let min=Math.min(...objects.map(o=>o.z),0);if(min>-70)spawnRow(min-13);for(let p of particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.z+=p.vz*dt;p.vy-=5*dt;p.life-=dt*1.8}particles=particles.filter(p=>p.life>0);updateUI()}
+  function frame(now){let dt=Math.min(.033,(now-last)/1000||0);last=now;if(shake)shake=Math.max(0,shake-dt);resize();update(dt,now/1000);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);kitchen();for(let o of objects)renderObject(o,now/1000);for(let p of particles)draw(cube,[p.x,p.y,p.z],[.07,.07,.07],colors.lime,[now*.003,0,0]);fly(now/1000);requestAnimationFrame(frame)}
+  reset();requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
