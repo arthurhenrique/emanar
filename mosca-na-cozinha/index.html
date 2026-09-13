@@ -90,7 +90,9 @@
 <script>
 (() => {
   'use strict';
-  const canvas=document.getElementById('game'), gl=canvas.getContext('webgl',{antialias:true,alpha:false});
+  const canvas=document.getElementById('game');
+  const touchDevice=navigator.maxTouchPoints>0||matchMedia('(pointer: coarse)').matches;
+  const gl=touchDevice?null:canvas.getContext('webgl',{antialias:true,alpha:false});
   const $=id=>document.getElementById(id);
   const ui={start:$('start'),over:$('gameover'),score:$('score'),crumbs:$('crumbs'),speed:$('speed'),pickup:$('pickup'),pause:$('pause')};
   if(!gl){runFallback();return;}
