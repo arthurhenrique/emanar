@@ -21,9 +21,9 @@ def main():
     sources = []
     for i, hz in enumerate(notes):
         sources += ["-f", "lavfi", "-i", f"sine=frequency={hz}:sample_rate=44100:duration={duration:.3f}"]
-    mix = "".join(f"[{i}:a]volume={0.07 if i == 0 else 0.025}[a{i}];" for i in range(len(notes)))
+    mix = "".join(f"[{i}:a]volume={0.55 if i == 0 else 0.20}[a{i}];" for i in range(len(notes)))
     mix += "".join(f"[a{i}]" for i in range(len(notes)))
-    mix += f"amix=inputs={len(notes)}:duration=longest,afade=t=in:st=0:d=1,afade=t=out:st={fade_start:.3f}:d=2[aout]"
+    mix += f"amix=inputs={len(notes)}:duration=longest:normalize=0,alimiter=limit=0.85,afade=t=in:st=0:d=1,afade=t=out:st={fade_start:.3f}:d=2[aout]"
     subprocess.run(["ffmpeg", "-y", *sources, "-i", str(args.input), "-filter_complex", mix, "-map", f"{len(notes)}:v:0", "-map", "[aout]", "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-shortest", str(args.output)], check=True)
     print(f"Vídeo criado: {args.output}")
 
