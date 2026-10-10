@@ -1,0 +1,55 @@
+name: Render Grill Me Reel
+
+on:
+  pull_request:
+    paths:
+      - 'videos/**'
+      - '.github/workflows/render-grill-me.yml'
+  push:
+    branches: [feat/manim-videos-grill-me]
+    paths:
+      - 'videos/**'
+      - '.github/workflows/render-grill-me.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Manim native dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg libcairo2-dev libpango1.0-dev pkg-config python3-dev fonts-dejavu-core
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: videos/requirements.txt
+      - name: Install Manim
+        run: pip install -r videos/requirements.txt
+      - name: Render native vertical Reel
+        run: |
+          python -m manim -qh --disable_caching videos/grill_me.py GrillMe
+          find media -name 'GrillMe.mp4' -print
+          mkdir -p dist
+          find media -name 'GrillMe.mp4' -exec cp '{}' dist/grill-me-silent.mp4 \;
+          test -s dist/grill-me-silent.mp4
+      - name: Add soundtrack
+        run: python videos/add_music.py dist/grill-me-silent.mp4 dist/grill-me-with-music.mp4
+      - name: Check output
+        run: |
+          ffprobe -v error -show_entries stream=codec_name,width,height -of default=noprint_wrappers=1 dist/grill-me-with-music.mp4
+          test -s dist/grill-me-with-music.mp4
+      - name: Upload preview video
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: grill-me-reel-preview
+          path: dist/*.mp4
+          if-no-files-found: warn
+          retention-days: 14
