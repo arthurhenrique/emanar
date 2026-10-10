@@ -26,7 +26,7 @@ class GrillMe(Scene):
         subtitle = self.label("Da ideia ao plano concreto.", 40).next_to(underline, DOWN, buff=.6)
         self.play(FadeIn(eyebrow, shift=DOWN), Write(title), run_time=1.8)
         self.play(Create(underline), FadeIn(subtitle, shift=UP), run_time=1.2)
-        self.wait(1.4)
+        self.wait(5.4)
         self.play(FadeOut(VGroup(eyebrow, title, underline, subtitle)), run_time=.8)
 
         headline = self.label("Travou? Por onde começar?", 38).to_edge(UP, buff=.85)
@@ -39,7 +39,7 @@ class GrillMe(Scene):
             cards.add(card)
         self.play(FadeIn(headline, shift=DOWN), run_time=1)
         self.play(LaggedStart(*[FadeIn(c, shift=UP) for c in cards], lag_ratio=.2), run_time=1.7)
-        self.wait(1.1)
+        self.wait(6.1)
         self.play(*[c.animate.scale(.85).set_opacity(.3) for c in cards], run_time=.7)
         self.play(FadeOut(VGroup(headline, cards)), run_time=.6)
 
@@ -48,7 +48,7 @@ class GrillMe(Scene):
         question = self.label("Comece pelas perguntas.", 36).next_to(circle, DOWN, buff=.7)
         self.play(Create(circle), FadeIn(spark, scale=.5), run_time=1.1)
         self.play(Write(question), run_time=1)
-        self.wait(1.2)
+        self.wait(5.2)
         self.play(FadeOut(VGroup(circle, spark, question)), run_time=.7)
 
         heading = self.label("Grill Me", 70, GREEN).to_edge(UP, buff=.85)
@@ -65,7 +65,7 @@ class GrillMe(Scene):
             self.play(FadeIn(nodes[i], scale=.8), run_time=.65)
             if i < 2:
                 self.play(GrowArrow(arrows[i]), run_time=.35)
-        self.wait(1.7)
+        self.wait(6.7)
         self.play(FadeOut(VGroup(heading, nodes, arrows)), run_time=.8)
 
         box = RoundedRectangle(width=8, height=4.5, corner_radius=.3, fill_color=PAPER, fill_opacity=1, stroke_width=0)
@@ -76,4 +76,4 @@ class GrillMe(Scene):
         self.play(FadeIn(box, scale=.9), run_time=.9)
         self.play(Write(final), FadeIn(brand, shift=UP), Create(accent), run_time=1.6)
         self.play(FadeIn(footer), run_time=.7)
-        self.wait(3)
+        self.wait(9)
