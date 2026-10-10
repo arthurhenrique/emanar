@@ -21,17 +21,17 @@ class GrillMe(Scene):
         self.logo=self.t("EMANAR   /   TECH", 22, MUTED).to_edge(UP,buff=.85)
         self.add(self.logo)
         # Act 1: an unresolved thought, represented as a noisy vector field.
-        headline=VGroup(self.t("TRAVOU NA",54),self.t("PRÓXIMA TAREFA?",49,YELLOW)).arrange(DOWN,buff=.18).shift(UP*3.5)
+        headline=VGroup(self.t("UMA IDEIA.",64),self.t("MIL DÚVIDAS.",61,YELLOW)).arrange(DOWN,buff=.24).shift(UP*3.5)
         self.play(LaggedStart(*[FadeIn(x,shift=UP*.3) for x in headline],lag_ratio=.2),run_time=1.5)
         rng=np.random.default_rng(17)
-        dots=VGroup(*[Dot(point=[rng.uniform(-3.4,3.4),rng.uniform(-2.4,1.9),0],radius=.04,color=MUTED) for _ in range(46)])
+        dots=VGroup(*[Dot(point=[rng.uniform(-2.7,2.7),rng.uniform(-1.9,1.4),0],radius=.045,color=MUTED) for _ in range(26)])
         edges=VGroup()
-        for i in range(32):
+        for i in range(19):
             a,b=rng.choice(len(dots),2,replace=False)
-            edges.add(Line(dots[a].get_center(),dots[b].get_center(),stroke_width=1.5,color=GREEN,stroke_opacity=.32))
+            edges.add(Line(dots[a].get_center(),dots[b].get_center(),stroke_width=1.2,color=GREEN,stroke_opacity=.20))
         cloud=VGroup(edges,dots)
         self.play(LaggedStart(*[FadeIn(d) for d in dots],lag_ratio=.018),Create(edges),run_time=2)
-        self.play(Rotate(cloud,angle=.2),run_time=2)
+        self.play(cloud.animate.scale(.93).set_opacity(.72),run_time=2)
         self.wait(2)
         self.clear_scene()
         # Act 2: transform a vague brief into interrogative branches.
@@ -45,27 +45,27 @@ class GrillMe(Scene):
             rect=RoundedRectangle(width=6.2,height=1.12,corner_radius=.16,color=GREEN,stroke_width=2)
             label=self.t(p,31).move_to(rect)
             cards.add(VGroup(rect,label).move_to([0,1.5-i*1.55,0]))
-        wires=VGroup(*[CubicBezier(root.get_bottom(),root.get_bottom()+DOWN*.65,c.get_top()+UP*.6,c.get_top(),color=MUTED,stroke_width=2) for c in cards])
+        wires=VGroup(*[Line(root.get_bottom()+DOWN*.08,c.get_top()+UP*.08,color=MUTED,stroke_width=2,stroke_opacity=.28) for c in cards])
         self.play(LaggedStart(*[Create(w) for w in wires],lag_ratio=.15),run_time=1.4)
-        self.play(LaggedStart(*[FadeIn(c,shift=RIGHT*.35) for c in cards],lag_ratio=.2),run_time=2.3)
+        self.play(LaggedStart(*[FadeIn(c,shift=RIGHT*.35) for c in cards],lag_ratio=.2),run_time=2.3)\n        self.bring_to_front(root,*cards)
         self.wait(3)
         self.clear_scene()
         # Act 3: question-driven refinement.
         name=self.t("GRILL ME",76,GREEN).shift(UP*4.7)
         by=self.t("skill de Matt Pocock",28).next_to(name,DOWN,buff=.25)
         self.play(Write(name),FadeIn(by),run_time=1.6)
-        left=self.t("IDEIA VAGA",31,YELLOW).move_to(LEFT*2.1+UP*1.3)
-        right=self.t("ESCOPO CLARO",30,MUTED).move_to(RIGHT*2.05+UP*1.3)
+        left=self.t("IDEIA VAGA",27,YELLOW).move_to(LEFT*2.1+UP*1.3)
+        right=self.t("ESCOPO CLARO",26,MUTED).move_to(RIGHT*2.05+UP*1.3)
         center=Circle(radius=1.05,color=GREEN,stroke_width=8).shift(DOWN*1.2)
         question=self.t("?",94,YELLOW).move_to(center)
-        arrows=VGroup(Arrow(left.get_bottom(),center.get_left()+UP*.1,buff=.2,color=CREAM),Arrow(center.get_right()+UP*.1,right.get_bottom(),buff=.2,color=CREAM))
+        arrows=VGroup(Arrow(left.get_bottom()+DOWN*.2,center.get_left()+LEFT*.18,buff=.2,color=CREAM,stroke_width=3),Arrow(center.get_right()+RIGHT*.18,right.get_bottom()+DOWN*.2,buff=.2,color=CREAM,stroke_width=3))
         self.play(FadeIn(left),Create(center),FadeIn(question),run_time=1.5)
-        self.play(GrowArrow(arrows[0]),GrowArrow(arrows[1]),FadeIn(right),run_time=1.3)
+        self.play(GrowArrow(arrows[0]),GrowArrow(arrows[1]),FadeIn(right),run_time=1.3)\n        self.bring_to_front(center,question,left,right)
         self.play(Rotate(question,angle=TAU),run_time=2)
         self.wait(4)
         self.clear_scene()
         # Act 4: a real hierarchy, not three disconnected boxes.
-        title=self.t("DO ABSTRATO AO CONCRETO",37,YELLOW).shift(UP*5)
+        title=self.t("DA IDEIA AO PLANO",42,YELLOW).shift(UP*5)
         self.play(FadeIn(title,shift=UP),run_time=.8)
         levels=[("IDEIA","O que queremos?"),("CRITÉRIOS","O que importa?"),("REQUISITOS","O que precisa existir?"),("PLANO","Qual é o próximo passo?")]
         bars=VGroup()
@@ -78,7 +78,7 @@ class GrillMe(Scene):
         for i,b in enumerate(bars):
             self.play(FadeIn(b,shift=UP*.4),run_time=.75)
             if i<3:
-                self.play(GrowArrow(Arrow(b.get_bottom(),bars[i+1].get_top(),buff=.08,color=YELLOW,stroke_width=5)),run_time=.4)
+                self.play(GrowArrow(Arrow(b.get_bottom()+DOWN*.06,bars[i+1].get_top()+UP*.06,buff=.04,color=YELLOW,stroke_width=3)),run_time=.4)
         self.wait(3)
         self.clear_scene()
         # Act 5: editorial end card.
