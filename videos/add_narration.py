@@ -1,43 +1,36 @@
-"""Add Brazilian Portuguese male narration to an Instagram Reel.
+"""Mix a high-quality, licensed Portuguese voiceover into the Instagram Reel.
 
-Requires: espeak (pt-br voice), ffmpeg, ffprobe.
-The espeak voice is synthetic and robotic: replace it with a licensed human
-voice or a higher-quality TTS for production.
+Usage:
+ python videos/add_narration.py input.mp4 voiceover.wav output.mp4
+
+Provide a human recording or neural TTS audio. This script deliberately does
+not generate eSpeak narration, which sounds robotic.
 """
 import argparse
 import subprocess
-import tempfile
 from pathlib import Path
 
-SCRIPT = [
-    "Já ficou travado, sem saber por onde começar uma tarefa?",
-    "Você tem uma ideia, mas ela ainda está confusa. O que construir? Qual é o escopo?",
-    "O Grill Me, do Matt Pocock, ajuda justamente nessa etapa.",
-    "Em vez de sair codando, você responde perguntas que desafiam suas suposições.",
-    "A cada resposta, a ideia fica mais clara. Você refina os requisitos e alinha o objetivo.",
-    "O resultado é sair do abstrato e chegar a um plano concreto.",
-    "Antes de codar, pense melhor. Grill Me."
-]
-
-def run(*args):
-    subprocess.run(args, check=True)
 
 def main():
-    p = argparse.ArgumentParser()
-    p.add_argument("video", type=Path)
-    p.add_argument("output", type=Path)
-    a = p.parse_args()
-    a.output.parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.TemporaryDirectory() as temp:
-        speech = Path(temp) / "narration.wav"
-        run("espeak", "-v", "pt-br+m3", "-s", "142", "-a", "180", "-w", str(speech), " ".join(SCRIPT))
-        # Original audio, when present, is a quieter backing track.
-        run("ffmpeg", "-y", "-i", str(a.video), "-i", str(speech),
-            "-filter_complex",
-            "[0:a]volume=0.14[music];[1:a]volume=1.5,highpass=f=100,lowpass=f=6500[voice];"
-            "[music][voice]amix=inputs=2:duration=first:normalize=0,alimiter=limit=0.93[a]",
-            "-map", "0:v:0", "-map", "[a]", "-c:v", "copy", "-c:a", "aac",
-            "-b:a", "192k", "-t", "60", str(a.output))
+    parser = argparse.ArgumentParser()
+    parser.add_argument("video", type=Path)
+    parser.add_argument("voiceover", type=Path)
+    parser.add_argument("output", type=Path)
+    args = parser.parse_args()
+    for file in (args.video, args.voiceover):
+        if not file.is_file():
+            parser.error(f"Arquivo não encontrado: {file}")
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    subprocess.run([
+        "ffmpeg", "-y", "-i", str(args.video), "-i", str(args.voiceover),
+        "-filter_complex",
+        "[0:a]volume=0.12[music];"
+        "[1:a]highpass=f=80,lowpass=f=12000,acompressor=threshold=0.08:ratio=3:attack=10:release=150,volume=1.4[voice];"
+        "[music][voice]amix=inputs=2:duration=first:normalize=0,alimiter=limit=0.9[a]",
+        "-map", "0:v:0", "-map", "[a]", "-c:v", "copy",
+        "-c:a", "aac", "-b:a", "192k", "-shortest", str(args.output)
+    ], check=True)
+
 
 if __name__ == "__main__":
     main()
