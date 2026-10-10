@@ -1,79 +1,92 @@
-"""Vídeo conceitual Grill Me, com identidade visual Emanar (Manim Community)."""
+"""Grill Me / Matt Pocock: editorial motion graphics, native 1080x1920 Manim."""
 from manim import *
+import numpy as np
 
-DARK = "#063B31"
-GREEN = "#00AA78"
-PAPER = "#FBFAF4"
-YELLOW = "#FFF19F"
-INK = "#10241F"
-
-config.background_color = DARK
-config.frame_width = 9
-config.frame_height = 16
-config.pixel_width = 1080
-config.pixel_height = 1920
-config.frame_rate = 30
-
+BG="#063B31"; GREEN="#00AA78"; CREAM="#FBFAF4"; YELLOW="#FFF19F"; MUTED="#74E5BD"
+config.background_color=BG
+config.frame_width=9
+config.frame_height=16
+config.pixel_width=1080
+config.pixel_height=1920
+config.frame_rate=30
 
 class GrillMe(Scene):
-    def label(self, message, size=52, color=PAPER):
-        return Text(message, font="DejaVu Sans", font_size=size, color=color, weight=BOLD)
-
+    def t(self, words, size=42, color=CREAM):
+        return Text(words, font="DejaVu Sans", font_size=size, color=color, weight=BOLD)
+    def caption(self, words):
+        return self.t(words, 27, MUTED).to_edge(DOWN, buff=1.65)
+    def clear_scene(self):
+        self.play(*[FadeOut(m) for m in list(self.mobjects) if m is not self.logo],run_time=.65)
     def construct(self):
-        eyebrow = self.label("EMANAR  /  APRESENTA", 26, GREEN).to_edge(UP, buff=.55)
-        title = self.label("Grill Me", 84)
-        underline = Line(LEFT * 2.6, RIGHT * 2.6, color=YELLOW, stroke_width=14).next_to(title, DOWN, buff=.18)
-        subtitle = self.label("Da ideia ao plano concreto.", 40).next_to(underline, DOWN, buff=.6)
-        self.play(FadeIn(eyebrow, shift=DOWN), Write(title), run_time=1.8)
-        self.play(Create(underline), FadeIn(subtitle, shift=UP), run_time=1.2)
-        self.wait(5.4)
-        self.play(FadeOut(VGroup(eyebrow, title, underline, subtitle)), run_time=.8)
-
-        headline = self.label("Travou? Por onde começar?", 38).to_edge(UP, buff=.85)
-        problems = ["Ideia abstrata", "Dúvidas", "Sem direção"]
-        cards = VGroup()
-        for i, word in enumerate(problems):
-            bg = RoundedRectangle(corner_radius=.24, width=2.6, height=2.05, fill_color=PAPER, fill_opacity=1, stroke_width=0)
-            txt = self.label(word, 20, INK).move_to(bg)
-            card = VGroup(bg, txt).shift(RIGHT * (i - 1) * 2.95 + DOWN * .45)
-            cards.add(card)
-        self.play(FadeIn(headline, shift=DOWN), run_time=1)
-        self.play(LaggedStart(*[FadeIn(c, shift=UP) for c in cards], lag_ratio=.2), run_time=1.7)
-        self.wait(6.1)
-        self.play(*[c.animate.scale(.85).set_opacity(.3) for c in cards], run_time=.7)
-        self.play(FadeOut(VGroup(headline, cards)), run_time=.6)
-
-        circle = Circle(radius=1.35, color=GREEN, stroke_width=12)
-        spark = self.label("?", 115, YELLOW).move_to(circle)
-        question = self.label("Comece pelas perguntas.", 36).next_to(circle, DOWN, buff=.7)
-        self.play(Create(circle), FadeIn(spark, scale=.5), run_time=1.1)
-        self.play(Write(question), run_time=1)
-        self.wait(5.2)
-        self.play(FadeOut(VGroup(circle, spark, question)), run_time=.7)
-
-        heading = self.label("Grill Me", 70, GREEN).to_edge(UP, buff=.85)
-        steps = ["Questione", "Refine", "Alinhe"]
-        nodes = VGroup()
-        for i, word in enumerate(steps):
-            disc = Circle(radius=.83, fill_color=GREEN if i == 1 else PAPER, fill_opacity=1, stroke_width=0)
-            num = self.label(str(i + 1), 55, PAPER if i == 1 else DARK).move_to(disc)
-            caption = self.label(word, 32).next_to(disc, DOWN, buff=.38)
-            nodes.add(VGroup(disc, num, caption).shift(RIGHT * (i - 1) * 2.8 + DOWN * .25))
-        arrows = VGroup(*[Arrow(nodes[i][0].get_right() + RIGHT * .15, nodes[i + 1][0].get_left() + LEFT * .15, buff=.15, color=YELLOW, stroke_width=7) for i in range(2)])
-        self.play(FadeIn(heading), run_time=.7)
-        for i in range(3):
-            self.play(FadeIn(nodes[i], scale=.8), run_time=.65)
-            if i < 2:
-                self.play(GrowArrow(arrows[i]), run_time=.35)
-        self.wait(6.7)
-        self.play(FadeOut(VGroup(heading, nodes, arrows)), run_time=.8)
-
-        box = RoundedRectangle(width=8, height=4.5, corner_radius=.3, fill_color=PAPER, fill_opacity=1, stroke_width=0)
-        final = self.label("Antes de codar, refine.", 38, DARK).move_to(box).shift(UP * .55)
-        brand = self.label("Grill Me", 65, GREEN).move_to(box).shift(DOWN * .65)
-        accent = Line(LEFT * 1.5, RIGHT * 1.5, color=YELLOW, stroke_width=13).next_to(brand, DOWN, buff=.24)
-        footer = self.label("Grill Me · Matt Pocock · Emanar", 20, PAPER).to_edge(DOWN, buff=.45)
-        self.play(FadeIn(box, scale=.9), run_time=.9)
-        self.play(Write(final), FadeIn(brand, shift=UP), Create(accent), run_time=1.6)
-        self.play(FadeIn(footer), run_time=.7)
-        self.wait(9)
+        self.logo=self.t("EMANAR   /   TECH", 22, MUTED).to_edge(UP,buff=.85)
+        self.add(self.logo)
+        # Act 1: an unresolved thought, represented as a noisy vector field.
+        headline=VGroup(self.t("TRAVOU NA",54),self.t("PRÓXIMA TAREFA?",49,YELLOW)).arrange(DOWN,buff=.18).shift(UP*3.5)
+        self.play(LaggedStart(*[FadeIn(x,shift=UP*.3) for x in headline],lag_ratio=.2),run_time=1.5)
+        rng=np.random.default_rng(17)
+        dots=VGroup(*[Dot(point=[rng.uniform(-3.4,3.4),rng.uniform(-2.4,1.9),0],radius=.04,color=MUTED) for _ in range(46)])
+        edges=VGroup()
+        for i in range(32):
+            a,b=rng.choice(len(dots),2,replace=False)
+            edges.add(Line(dots[a].get_center(),dots[b].get_center(),stroke_width=1.5,color=GREEN,stroke_opacity=.32))
+        cloud=VGroup(edges,dots)
+        self.play(LaggedStart(*[FadeIn(d) for d in dots],lag_ratio=.018),Create(edges),run_time=2)
+        self.play(Rotate(cloud,angle=.2),run_time=2)
+        self.wait(2)
+        self.clear_scene()
+        # Act 2: transform a vague brief into interrogative branches.
+        idea=RoundedRectangle(width=5.8,height=1.6,corner_radius=.25,color=YELLOW,fill_color=YELLOW,fill_opacity=1)
+        idea_txt=self.t("TENHO UMA IDEIA",34,BG).move_to(idea)
+        root=VGroup(idea,idea_txt).shift(UP*3.6)
+        self.play(FadeIn(root,scale=.8),run_time=1)
+        prompts=["Pra quem?", "Qual problema?", "O que é essencial?", "Como validar?"]
+        cards=VGroup()
+        for i,p in enumerate(prompts):
+            rect=RoundedRectangle(width=6.2,height=1.12,corner_radius=.16,color=GREEN,stroke_width=2)
+            label=self.t(p,31).move_to(rect)
+            cards.add(VGroup(rect,label).move_to([0,1.5-i*1.55,0]))
+        wires=VGroup(*[CubicBezier(root.get_bottom(),root.get_bottom()+DOWN*.65,c.get_top()+UP*.6,c.get_top(),color=MUTED,stroke_width=2) for c in cards])
+        self.play(LaggedStart(*[Create(w) for w in wires],lag_ratio=.15),run_time=1.4)
+        self.play(LaggedStart(*[FadeIn(c,shift=RIGHT*.35) for c in cards],lag_ratio=.2),run_time=2.3)
+        self.wait(3)
+        self.clear_scene()
+        # Act 3: question-driven refinement.
+        name=self.t("GRILL ME",76,GREEN).shift(UP*4.7)
+        by=self.t("skill de Matt Pocock",28).next_to(name,DOWN,buff=.25)
+        self.play(Write(name),FadeIn(by),run_time=1.6)
+        left=self.t("IDEIA VAGA",31,YELLOW).move_to(LEFT*2.1+UP*1.3)
+        right=self.t("ESCOPO CLARO",30,MUTED).move_to(RIGHT*2.05+UP*1.3)
+        center=Circle(radius=1.05,color=GREEN,stroke_width=8).shift(DOWN*1.2)
+        question=self.t("?",94,YELLOW).move_to(center)
+        arrows=VGroup(Arrow(left.get_bottom(),center.get_left()+UP*.1,buff=.2,color=CREAM),Arrow(center.get_right()+UP*.1,right.get_bottom(),buff=.2,color=CREAM))
+        self.play(FadeIn(left),Create(center),FadeIn(question),run_time=1.5)
+        self.play(GrowArrow(arrows[0]),GrowArrow(arrows[1]),FadeIn(right),run_time=1.3)
+        self.play(Rotate(question,angle=TAU),run_time=2)
+        self.wait(4)
+        self.clear_scene()
+        # Act 4: a real hierarchy, not three disconnected boxes.
+        title=self.t("DO ABSTRATO AO CONCRETO",37,YELLOW).shift(UP*5)
+        self.play(FadeIn(title,shift=UP),run_time=.8)
+        levels=[("IDEIA","O que queremos?"),("CRITÉRIOS","O que importa?"),("REQUISITOS","O que precisa existir?"),("PLANO","Qual é o próximo passo?")]
+        bars=VGroup()
+        for i,(a,b) in enumerate(levels):
+            w=7.4-i*.75
+            rect=RoundedRectangle(width=w,height=1.45,corner_radius=.16,stroke_color=GREEN,stroke_width=2,fill_color=GREEN,fill_opacity=.12+i*.12)
+            main=self.t(a,31,CREAM).move_to(rect).shift(UP*.25)
+            sub=self.t(b,19,MUTED).move_to(rect).shift(DOWN*.35)
+            bars.add(VGroup(rect,main,sub).move_to([0,2.8-i*2.05,0]))
+        for i,b in enumerate(bars):
+            self.play(FadeIn(b,shift=UP*.4),run_time=.75)
+            if i<3:
+                self.play(GrowArrow(Arrow(b.get_bottom(),bars[i+1].get_top(),buff=.08,color=YELLOW,stroke_width=5)),run_time=.4)
+        self.wait(3)
+        self.clear_scene()
+        # Act 5: editorial end card.
+        mark=Circle(radius=2.1,color=GREEN,stroke_width=12)
+        rays=VGroup(*[Line(2.35*RIGHT,2.8*RIGHT,color=YELLOW,stroke_width=6).rotate(a,about_point=ORIGIN) for a in np.linspace(0,TAU,16,endpoint=False)])
+        brand=self.t("GRILL ME",65).move_to(mark)
+        close=VGroup(self.t("ANTES DE CODAR,",39),self.t("REFINE A IDEIA.",43,YELLOW)).arrange(DOWN,buff=.18).shift(DOWN*3.6)
+        self.play(Create(mark),LaggedStart(*[Create(r) for r in rays],lag_ratio=.03),run_time=2)
+        self.play(Write(brand),run_time=1.2)
+        self.play(FadeIn(close,shift=UP),run_time=1.1)
+        self.wait(4)
