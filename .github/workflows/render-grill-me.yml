@@ -32,6 +32,8 @@ jobs:
           cache-dependency-path: videos/requirements.txt
       - name: Install Manim
         run: pip install -r videos/requirements.txt
+      - name: Validate Python syntax
+        run: python -m compileall -q videos/grill_me.py videos/add_music.py videos/add_narration.py
       - name: Render native vertical Reel
         run: |
           python -m manim -qh --disable_caching videos/grill_me.py GrillMe
