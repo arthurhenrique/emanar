@@ -17,6 +17,6 @@ O caminho do MP4 do Manim depende da versão/configuração. Se necessário, enc
 
 ## Primeiro vídeo
 
-**Grill Me: menos atrito, mais clareza.** Vídeo conceitual de aproximadamente 30 segundos, sem alegar funcionalidades específicas ainda não documentadas. Visual 16:9, transições animadas, trilha eletrônica original gerada proceduralmente (sem música de terceiros). O áudio é sintetizado e mixado por FFmpeg, que deve estar instalado.
+**Grill Me: menos atrito, mais clareza.** Reel educativo vertical 1080×1920 sobre a skill Grill Me de Matt Pocock. Mostra como perguntas ajudam a refinar ideias abstratas, alinhar escopo e definir um plano. Vídeo conceitual de aproximadamente 30 segundos, sem alegar funcionalidades específicas ainda não documentadas. Visual 9:16, transições animadas, trilha eletrônica original gerada proceduralmente (sem música de terceiros). O áudio é sintetizado e mixado por FFmpeg, que deve estar instalado.
 
 Paleta: verde-escuro `#063B31`, verde `#00AA78`, papel `#FBFAF4`, amarelo `#FFF19F`. Ajuste o roteiro em `grill_me.py` para refletir funcionalidades reais do Grill Me.
