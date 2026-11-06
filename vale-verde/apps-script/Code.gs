@@ -1,0 +1,138 @@
+/**
+ * Clube de Benefícios Vale Verde — pré-cadastro.
+ *
+ * Cole este arquivo no editor do Apps Script da planilha
+ * (Extensões → Apps Script) e publique como Web App.
+ *
+ * doPost: grava uma linha por cadastro.
+ * doGet:  devolve apenas o total de casas únicas, ex.: {"total": 42}.
+ */
+
+var SHEET_NAME = 'Cadastros';
+
+var HEADERS = [
+  'Data e hora',
+  'Nome',
+  'Endereço',
+  'E-mail',
+  'WhatsApp',
+  'Já contribui',
+  'Benefícios de interesse',
+  'Sugestão',
+  'Consentimento LGPD',
+  'Endereço normalizado'
+];
+
+var ADDRESS_COLUMN = HEADERS.length; // última coluna: endereço normalizado
+
+function doGet() {
+  return json_({ total: countHouses_() });
+}
+
+function doPost(e) {
+  var data;
+  try {
+    data = JSON.parse((e && e.postData && e.postData.contents) || '{}');
+  } catch (err) {
+    return json_({ ok: false, error: 'invalid_json' });
+  }
+
+  // Honeypot preenchido: robô. Responde como sucesso e não grava nada.
+  if (clean_(data.website, 200)) {
+    return json_({ ok: true, total: countHouses_() });
+  }
+
+  var nome = clean_(data.nome, 120);
+  var endereco = clean_(data.endereco, 200);
+  var email = clean_(data.email, 160);
+  var whatsapp = clean_(data.whatsapp, 30).replace(/[^\d+()\-\s]/g, '');
+  var contribui = clean_(data.contribui, 20);
+  var beneficios = Array.isArray(data.beneficios)
+    ? data.beneficios.slice(0, 20).map(function (b) { return clean_(b, 80); }).filter(String).join('; ')
+    : '';
+  var sugestao = clean_(data.sugestao, 500);
+  var consentimento = data.consentimento === true;
+
+  if (!nome || !endereco) return json_({ ok: false, error: 'missing_name_or_address' });
+  if (!email && !whatsapp) return json_({ ok: false, error: 'missing_contact' });
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json_({ ok: false, error: 'invalid_email' });
+  if (whatsapp && whatsapp.replace(/\D/g, '').length < 10) return json_({ ok: false, error: 'invalid_whatsapp' });
+  if (!consentimento) return json_({ ok: false, error: 'missing_consent' });
+  if (['sim', 'nao', 'as_vezes', ''].indexOf(contribui) === -1) contribui = '';
+
+  var lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    var sheet = sheet_();
+    sheet.appendRow([
+      new Date(),
+      safe_(nome),
+      safe_(endereco),
+      safe_(email),
+      safe_(whatsapp),
+      { sim: 'Sim', nao: 'Não', as_vezes: 'Às vezes' }[contribui] || '',
+      safe_(beneficios),
+      safe_(sugestao),
+      'Sim',
+      normalizeAddress_(endereco)
+    ]);
+    SpreadsheetApp.flush();
+    return json_({ ok: true, total: countHouses_() });
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/** Conta casas únicas pelo endereço normalizado, não por envio. */
+function countHouses_() {
+  var sheet = sheet_();
+  var last = sheet.getLastRow();
+  if (last < 2) return 0;
+  var values = sheet.getRange(2, ADDRESS_COLUMN, last - 1, 1).getValues();
+  var seen = {};
+  var total = 0;
+  for (var i = 0; i < values.length; i++) {
+    var key = String(values[i][0] || '');
+    if (key && !seen[key]) {
+      seen[key] = true;
+      total++;
+    }
+  }
+  return total;
+}
+
+/** "Rua das Flores, nº 12" e "rua das flores 12" viram a mesma casa. */
+function normalizeAddress_(text) {
+  return String(text)
+    .toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/\b(rua|r|avenida|av|alameda|al|travessa|tv|numero|num|no|n)\b\.?/g, ' ')
+    .replace(/[º°ª]/g, ' ')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+    .replace(/\s+/g, ' ');
+}
+
+function sheet_() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(SHEET_NAME) || ss.insertSheet(SHEET_NAME);
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(HEADERS);
+    sheet.setFrozenRows(1);
+  }
+  return sheet;
+}
+
+function clean_(value, max) {
+  return String(value == null ? '' : value).trim().slice(0, max);
+}
+
+/** Evita que um texto começando com = + - @ vire fórmula na planilha. */
+function safe_(text) {
+  return /^[=+\-@]/.test(text) ? "'" + text : text;
+}
+
+function json_(obj) {
+  return ContentService.createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}
