@@ -181,38 +181,6 @@
     }
 
     /* Passos */
-    .steps {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      display: grid;
-      gap: 14px;
-      counter-reset: step;
-    }
-    .steps li {
-      counter-increment: step;
-      display: flex;
-      gap: 16px;
-      align-items: flex-start;
-      background: var(--white);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 20px;
-    }
-    .steps li::before {
-      content: counter(step);
-      flex: none;
-      display: grid;
-      place-items: center;
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: var(--green-700);
-      color: var(--white);
-      font-weight: 800;
-    }
-    .steps p { margin: 4px 0 0; color: var(--muted); }
-
     /* Cards */
     .cards { display: grid; gap: 14px; }
     .card {
@@ -528,8 +496,6 @@
       .hero-grid { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 40px; align-items: center; }
       .hero-figure { margin: 0; }
       .hero-quote { margin-top: 32px; }
-      .steps { grid-template-columns: repeat(3, 1fr); }
-      .steps li { flex-direction: column; }
       .cards { grid-template-columns: repeat(2, 1fr); }
       .principles { grid-template-columns: repeat(2, 1fr); gap: 16px 32px; }
       .report { grid-template-columns: repeat(2, 1fr); }
@@ -586,35 +552,6 @@
   </header>
 
   <main>
-
-    <!-- Contexto + 2. Como funciona -->
-    <section id="como-funciona">
-      <div class="wrap">
-        <span class="eyebrow">Por que Morador Colaborador?</span>
-        <h2>Como funciona</h2>
-        <p class="lead">O Vale Verde é um bairro aberto. A portaria 24h, com funcionário presencial, câmeras e cancela, é mantida por uma contribuição voluntária sugerida de R$&nbsp;30/mês. Hoje poucos contribuem, e quem paga recebe o mesmo de quem não paga. O Morador Colaborador muda isso: a contribuição vira uma assinatura com benefícios extras.</p>
-        <ol class="steps">
-          <li>
-            <div>
-              <h3>Cadastre seu interesse</h3>
-              <p>Preencha o formulário abaixo. Não há cobrança nem compromisso agora.</p>
-            </div>
-          </li>
-          <li>
-            <div>
-              <h3>Lançamos com adesão suficiente</h3>
-              <p>Quando casas suficientes se cadastrarem, o programa é lançado e avisamos você.</p>
-            </div>
-          </li>
-          <li>
-            <div>
-              <h3>Você recebe os benefícios</h3>
-              <p>Ao contribuir, você passa a usar os benefícios do Morador Colaborador no dia a dia.</p>
-            </div>
-          </li>
-        </ol>
-      </div>
-    </section>
 
     <!-- 3. Benefícios principais -->
     <section id="beneficios">
@@ -828,6 +765,14 @@
         <span class="eyebrow">Dúvidas</span>
         <h2>Perguntas frequentes</h2>
         <div class="faq">
+          <details>
+            <summary>Por que criar o Morador Colaborador?</summary>
+            <p>O Vale Verde é um bairro aberto. A portaria 24h, com funcionário presencial, câmeras e cancela, é mantida por uma contribuição voluntária sugerida de R$&nbsp;30/mês. Hoje poucos contribuem, e quem paga recebe o mesmo de quem não paga. Com o Morador Colaborador, a contribuição vira uma assinatura com benefícios extras.</p>
+          </details>
+          <details>
+            <summary>Como funciona?</summary>
+            <p>Você cadastra seu interesse aqui, sem cobrança nem compromisso. Quando casas suficientes se cadastrarem, o programa é lançado e avisamos você. A partir daí, quem contribui passa a usar os benefícios no dia a dia.</p>
+          </details>
           <details>
             <summary>É obrigatório?</summary>
             <p>Não. A contribuição continua voluntária, e o pré-cadastro não gera nenhuma cobrança. Ele só mostra quantas casas têm interesse.</p>
