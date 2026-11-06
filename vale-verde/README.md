@@ -1,23 +1,23 @@
-# Clube de Benefícios Vale Verde — página de pré-cadastro
+# Morador Colaborador Vale Verde — página de pré-cadastro
 
-Página única, estática, para apresentar o clube e coletar pré-cadastros de moradores.
+Página única, estática, para apresentar o programa e coletar pré-cadastros de moradores.
 Os cadastros vão para uma **Planilha Google privada** por meio de um **Google Apps Script**.
 Nenhum dado de morador fica no GitHub.
 
 ```
 vale-verde/
 ├── index.html          página completa (CSS e JS embutidos)
-├── config.js           URL do Apps Script e WhatsApp do clube
+├── config.js           URL do Apps Script e WhatsApp do programa
 ├── apps-script/Code.gs código para colar no Apps Script
 └── README.md           este passo a passo
 ```
 
 ## 1. Criar a planilha
 
-1. Entre em <https://sheets.google.com> com a conta que vai administrar o clube.
-2. Crie uma planilha em branco e dê um nome, por exemplo **Clube Vale Verde — Cadastros**.
+1. Entre em <https://sheets.google.com> com a conta que vai administrar o programa.
+2. Crie uma planilha em branco e dê um nome, por exemplo **Morador Colaborador Vale Verde — Cadastros**.
 3. Não precisa criar colunas: o script cria a aba **Cadastros** com o cabeçalho no primeiro envio.
-4. Deixe a planilha **privada**. Compartilhe (botão Compartilhar) só com quem administra o clube.
+4. Deixe a planilha **privada**. Compartilhe (botão Compartilhar) só com quem administra o programa.
 
 ## 2. Colar o script
 
@@ -81,5 +81,5 @@ Para conferir ou ativar em outro repositório:
 ## Privacidade (LGPD)
 
 - A planilha é a única cópia dos dados. Mantenha-a privada.
-- Use os dados só para falar sobre o clube, como diz o consentimento do formulário.
+- Use os dados só para falar sobre o programa, como diz o consentimento do formulário.
 - Se um morador pedir para corrigir ou apagar os dados, edite ou apague a linha dele na planilha.

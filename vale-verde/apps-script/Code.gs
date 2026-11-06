@@ -1,5 +1,5 @@
 /**
- * Clube de Benefícios Vale Verde — pré-cadastro.
+ * Morador Colaborador Vale Verde — pré-cadastro.
  *
  * Cole este arquivo no editor do Apps Script da planilha
  * (Extensões → Apps Script) e publique como Web App.
