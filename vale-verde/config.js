@@ -4,4 +4,4 @@ const APPS_SCRIPT_URL = "";
 
 // Número de WhatsApp do clube, só dígitos, com DDI e DDD (ex.: "5511999998888").
 // Usado no rodapé e como alternativa quando o envio do formulário falhar.
-const WHATSAPP_CONTATO = "";
+const WHATSAPP_CONTATO = "5513996469075";
