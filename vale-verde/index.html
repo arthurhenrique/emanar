@@ -203,17 +203,6 @@
     }
     .card .icon svg { width: 28px; height: 28px; }
     .card p { margin: 6px 0 0; color: var(--muted); }
-    .badge {
-      display: inline-block;
-      padding: 3px 10px;
-      border-radius: 999px;
-      font-size: 0.75rem;
-      font-weight: 800;
-      letter-spacing: 0.02em;
-      vertical-align: middle;
-      margin-left: 6px;
-    }
-    .badge-soon { background: var(--sun-soft); color: #8a5a00; }
     /* Princípios */
     .soft { background: var(--green-50); }
     .principles {
@@ -533,12 +522,12 @@
     <section id="beneficios">
       <div class="wrap">
         <span class="eyebrow">Para colaboradores</span>
-        <h2>Benefícios do Morador Colaborador</h2>
-        <p class="lead">Além da segurança, que continua sendo de todos, quem contribui passa a ter:</p>
+        <h2>Benefícios em votação</h2>
+        <p class="lead">Nada está decidido ainda. Os mais votados no formulário entram no programa.</p>
         <div class="cards">
           <article class="card">
             <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="3"/></svg></div>
-            <h3>Registro automático na cancela <span class="badge badge-soon">em breve</span></h3>
+            <h3>Registro automático na cancela</h3>
             <p>Cada abertura fica registrada com foto e placa, e você recebe aviso quando seu carro entra ou sai.</p>
           </article>
           <article class="card">
@@ -553,7 +542,7 @@
           </article>
           <article class="card">
             <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/><path d="M12 7v3"/><path d="M12 13h.01"/></svg></div>
-            <h3>Alerta de movimentação suspeita <span class="badge badge-soon">em breve</span></h3>
+            <h3>Alerta de movimentação suspeita</h3>
             <p>A portaria registra as entradas e você recebe aviso de movimento fora do padrão perto da sua casa.</p>
           </article>
           <article class="card">
@@ -641,7 +630,7 @@
             </fieldset>
 
             <fieldset class="field">
-              <legend>Quais benefícios mais interessam? <span class="hint">Marque quantos quiser.</span></legend>
+              <legend>Vote nos benefícios que você quer <span class="hint">Marque quantos quiser.</span></legend>
               <div class="choices benefit-choices">
                 <label class="choice"><input type="checkbox" name="beneficios" value="Registro automático na cancela">Registro automático na cancela</label>
                 <label class="choice"><input type="checkbox" name="beneficios" value="Recebimento de encomendas">Recebimento de encomendas</label>
@@ -733,6 +722,10 @@
             <p>Você cadastra seu interesse aqui, sem cobrança nem compromisso. Quando casas suficientes se cadastrarem, o programa é lançado e avisamos você. A partir daí, quem contribui passa a usar os benefícios no dia a dia.</p>
           </details>
           <details>
+            <summary>Como os benefícios são escolhidos?</summary>
+            <p>Pelo voto dos moradores no formulário. Os mais votados entram no programa, e o resultado é divulgado quando o programa for lançado.</p>
+          </details>
+          <details>
             <summary>É obrigatório?</summary>
             <p>Não. A contribuição continua voluntária, e o pré-cadastro não gera nenhuma cobrança. Ele só mostra quantas casas têm interesse.</p>
           </details>
@@ -798,7 +791,7 @@
       // Convite para vizinhos (sem número: o morador escolhe o contato)
       document.getElementById("invite").href =
         "https://wa.me/?text=" + encodeURIComponent(
-          "Oi, vizinho! Estão criando o Morador Colaborador Vale Verde: a contribuição da portaria vira uma assinatura com benefícios (encomendas guardadas, casa vigiada nas viagens, descontos no comércio do bairro). Continua voluntário e a segurança segue para todos. Cadastrei meu interesse, cadastra o seu também: " + PAGE_URL
+          "Oi, vizinho! Estão criando o Morador Colaborador Vale Verde: a contribuição da portaria vira uma assinatura com benefícios, e os moradores estão votando quais entram (encomendas guardadas, casa vigiada nas viagens, descontos no comércio do bairro e outros). Continua voluntário e a segurança segue para todos. Já votei, vota você também: " + PAGE_URL
         );
 
       // ----- Copiar chave Pix -----
