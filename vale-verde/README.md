@@ -1,4 +1,4 @@
-# Morador Colaborador Vale Verde — página de pré-cadastro
+# Morador Contribuinte Vale Verde — página de pré-cadastro
 
 Página única, estática, para apresentar o programa e coletar pré-cadastros de moradores.
 Os cadastros vão para uma **Planilha Google privada** por meio de um **Google Apps Script**.
@@ -15,7 +15,7 @@ vale-verde/
 ## 1. Criar a planilha
 
 1. Entre em <https://sheets.google.com> com a conta que vai administrar o programa.
-2. Crie uma planilha em branco e dê um nome, por exemplo **Morador Colaborador Vale Verde — Cadastros**.
+2. Crie uma planilha em branco e dê um nome, por exemplo **Morador Contribuinte Vale Verde — Cadastros**.
 3. Não precisa criar colunas: o script cria a aba **Cadastros** com o cabeçalho no primeiro envio.
 4. Deixe a planilha **privada**. Compartilhe (botão Compartilhar) só com quem administra o programa.
 

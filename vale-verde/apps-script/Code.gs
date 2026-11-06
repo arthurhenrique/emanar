@@ -1,5 +1,5 @@
 /**
- * Morador Colaborador Vale Verde — pré-cadastro.
+ * Morador Contribuinte Vale Verde — pré-cadastro.
  *
  * Cole este arquivo no editor do Apps Script da planilha
  * (Extensões → Apps Script) e publique como Web App.
