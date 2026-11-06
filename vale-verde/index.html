@@ -817,14 +817,14 @@
         var layers = Array.prototype.map.call(fig.querySelectorAll(".pl"), function (g) {
           return { el: g, depth: parseFloat(g.getAttribute("data-depth")) || 1 };
         });
-        var MAX = 1.12;
+        var MAX = 1.3;
         var ticking = false;
         var distance = 1;
 
         function measure() {
           var r = fig.getBoundingClientRect();
-          // Zoom completo quando o fim da cena chega ao topo da tela
-          distance = Math.max(300, r.bottom + window.scrollY);
+          // Zoom completo quando 60% da cena já passou pelo topo da tela
+          distance = Math.max(300, r.top + window.scrollY + r.height * 0.6);
         }
         function render() {
           ticking = false;
