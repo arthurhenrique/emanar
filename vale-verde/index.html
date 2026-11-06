@@ -390,27 +390,33 @@
       text-align: center;
       box-shadow: var(--shadow);
     }
-    .pix-label {
-      font-size: 0.8rem;
-      font-weight: 800;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: var(--muted);
+    .pix-qr {
+      width: 180px;
+      height: 180px;
+      margin: 0 auto;
+      padding: 8px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--white);
     }
-    .pix-key {
-      font-size: 1.9rem;
-      font-weight: 800;
-      color: var(--green-900);
-      letter-spacing: 0.02em;
-      margin: 4px 0 6px;
-      font-variant-numeric: tabular-nums;
-      user-select: all;
-      overflow-wrap: anywhere;
-    }
-    .pix-name { color: var(--muted); margin-bottom: 18px; }
-    .pix-name strong { color: var(--text); }
+    .pix-hint { margin: 10px 0 16px; font-size: 0.92rem; color: var(--muted); }
     .pix-box .btn { width: 100%; }
-    .pix-cash { margin: 14px 0 0; font-weight: 700; color: var(--green-800); }
+    .pix-link {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 8px 4px;
+      border: 0;
+      background: none;
+      font: inherit;
+      font-weight: 700;
+      color: var(--green-700);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      cursor: pointer;
+    }
+    .pix-link:focus-visible { outline: 3px solid var(--sun); outline-offset: 2px; border-radius: 6px; }
+    .pix-name { margin-top: 12px; font-size: 0.92rem; color: var(--muted); }
+    .pix-name strong { color: var(--text); }
 
     /* FAQ */
     .faq { display: grid; gap: 10px; }
@@ -691,18 +697,18 @@
         <div class="pix-card">
           <div class="pix-intro">
             <span class="eyebrow">Contribua hoje</span>
-            <h2>Quer ajudar a portaria já?</h2>
-            <p class="lead">Enquanto o programa não é lançado, a portaria segue mantida pela contribuição voluntária sugerida de R$&nbsp;30 por mês.</p>
+            <h2>Contribua com a portaria</h2>
+            <p class="lead">Sugestão: R$&nbsp;30 por mês, por Pix ou em dinheiro na portaria.</p>
           </div>
           <div class="pix-box">
-            <div class="pix-label">Chave Pix (celular)</div>
-            <div class="pix-key" id="pix-key">13996469075</div>
-            <div class="pix-name">Favorecida: <strong>Maria Edenilde Santana Santos</strong></div>
-            <button class="btn btn-green" type="button" id="pix-copy">
+            <img class="pix-qr" src="pix-qr.svg" width="180" height="180" alt="QR Code do Pix para contribuir com a portaria">
+            <p class="pix-hint">Escaneie com o app do banco, ou copie o código e cole em “Pix Copia e Cola”.</p>
+            <button class="btn btn-green" type="button" data-copy="00020126360014br.gov.bcb.pix0114+55139964690755204000053039865802BR5923MARIA EDENILDE S SANTOS6007CUBATAO62070503***63041D0F" data-label="Copiar código Pix">
               <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-              <span>Copiar chave Pix</span>
+              <span>Copiar código Pix</span>
             </button>
-            <p class="pix-cash">Ou pague em dinheiro diretamente na portaria.</p>
+            <button class="pix-link" type="button" data-copy="13996469075" data-label="ou copie a chave: 13996469075"><span>ou copie a chave: 13996469075</span></button>
+            <div class="pix-name">Favorecida: <strong>Maria Edenilde Santana Santos</strong></div>
           </div>
         </div>
       </div>
@@ -795,24 +801,26 @@
           "Oi, vizinho! Estão criando o Morador Contribuinte Vale Verde: a contribuição da portaria vira uma assinatura com benefícios, e os moradores estão votando quais entram (encomendas guardadas, casa vigiada nas viagens, descontos no comércio do bairro e outros). Continua voluntário e a segurança segue para todos. Já votei, vota você também: " + PAGE_URL
         );
 
-      // ----- Copiar chave Pix -----
-      var pixBtn = document.getElementById("pix-copy");
-      var pixKey = document.getElementById("pix-key").textContent.trim();
-      pixBtn.addEventListener("click", function () {
-        var label = pixBtn.querySelector("span");
-        function done(ok) {
-          label.textContent = ok ? "Chave copiada!" : "Copie a chave acima";
-          setTimeout(function () { label.textContent = "Copiar chave Pix"; }, 2500);
-        }
+      // ----- Copiar Pix (código Copia e Cola ou chave) -----
+      function copyText(text) {
         if (navigator.clipboard && window.isSecureContext) {
-          navigator.clipboard.writeText(pixKey).then(function () { done(true); }, function () { done(false); });
-        } else {
-          var t = document.createElement("textarea");
-          t.value = pixKey; t.setAttribute("readonly", ""); t.style.position = "fixed"; t.style.opacity = "0";
-          document.body.appendChild(t); t.select();
-          var ok = false; try { ok = document.execCommand("copy"); } catch (e) {}
-          document.body.removeChild(t); done(ok);
+          return navigator.clipboard.writeText(text).then(function () { return true; }, function () { return false; });
         }
+        var t = document.createElement("textarea");
+        t.value = text; t.setAttribute("readonly", ""); t.style.position = "fixed"; t.style.opacity = "0";
+        document.body.appendChild(t); t.select();
+        var ok = false; try { ok = document.execCommand("copy"); } catch (e) {}
+        document.body.removeChild(t);
+        return Promise.resolve(ok);
+      }
+      document.querySelectorAll("[data-copy]").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var label = btn.querySelector("span");
+          copyText(btn.dataset.copy).then(function (ok) {
+            label.textContent = ok ? "Copiado!" : "Não deu para copiar";
+            setTimeout(function () { label.textContent = btn.dataset.label; }, 2500);
+          });
+        });
       });
 
       // ----- Contador (sempre o número real da planilha) -----
