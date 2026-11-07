@@ -43,6 +43,18 @@ Teste rápido: abra essa URL no navegador. Deve aparecer `{"total":0}`.
 > **Mudou o script depois?** Use **Implantar → Gerenciar implantações → editar (lápis) →
 > Versão: Nova versão → Implantar**. Assim a URL continua a mesma.
 
+## Página de parciais (`/vale-verde/parciais/`)
+
+Mostra só números somados: casas interessadas, quem já contribui e os votos por benefício.
+Nenhum nome, endereço, contato ou texto de sugestão sai da planilha. Com menos de 5 casas,
+a página mostra apenas o total.
+
+Para funcionar, o script da planilha precisa estar na versão mais recente:
+
+1. Copie de novo todo o conteúdo de [`apps-script/Code.gs`](apps-script/Code.gs) e cole no Apps Script, no lugar do antigo. Salve.
+2. **Implantar → Gerenciar implantações → editar (lápis) → Versão: Nova versão → Implantar.** Assim a URL continua a mesma.
+3. Teste abrindo a URL do script com `?view=parciais` no fim. Deve aparecer `{"total":...,"minimo":5,...}`.
+
 ## 4. Configurar a página
 
 Abra `config.js` e preencha:

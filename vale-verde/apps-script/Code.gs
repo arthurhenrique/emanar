@@ -6,6 +6,8 @@
  *
  * doPost: grava uma linha por cadastro.
  * doGet:  devolve apenas o total de casas únicas, ex.: {"total": 42}.
+ *         Com ?view=parciais, devolve só contagens para a página de parciais
+ *         (nunca nome, endereço, contato ou texto de sugestão).
  */
 
 var SHEET_NAME = 'Cadastros';
@@ -25,8 +27,100 @@ var HEADERS = [
 
 var ADDRESS_COLUMN = HEADERS.length; // última coluna: endereço normalizado
 
-function doGet() {
+var MIN_HOUSES_FOR_DETAILS = 5;
+
+// Benefícios na ordem da página. Nomes antigos contam para o nome atual.
+var BENEFITS = [
+  'Registro automático na cancela',
+  'Recebimento de encomendas',
+  'Casa vigiada em viagens',
+  'Rondas e alertas no bairro',
+  'Placa Morador Contribuinte',
+  'Descontos no comércio local'
+];
+var BENEFIT_ALIASES = {
+  'Tag ou leitura de placa': 'Registro automático na cancela',
+  'Alerta de movimentação suspeita': 'Rondas e alertas no bairro',
+  'Alerta de movimentação suspeita e rondas': 'Rondas e alertas no bairro',
+  'Placa Morador Colaborador': 'Placa Morador Contribuinte'
+};
+
+function doGet(e) {
+  if (e && e.parameter && e.parameter.view === 'parciais') {
+    return json_(parciais_());
+  }
   return json_({ total: countHouses_() });
+}
+
+/**
+ * Resumo agregado por casa (endereço normalizado). Quando a mesma casa
+ * envia mais de uma vez, vale o envio mais recente.
+ */
+function parciais_() {
+  var sheet = sheet_();
+  var last = sheet.getLastRow();
+  var rows = last < 2 ? [] : sheet.getRange(2, 1, last - 1, HEADERS.length).getValues();
+
+  var houses = {};
+  var firstSeen = {};
+  for (var i = 0; i < rows.length; i++) {
+    var key = String(rows[i][ADDRESS_COLUMN - 1] || '');
+    if (!key) continue;
+    var when = rows[i][0] instanceof Date ? rows[i][0] : new Date(rows[i][0]);
+    if (!firstSeen[key] || when < firstSeen[key]) firstSeen[key] = when;
+    if (!houses[key] || when >= houses[key].when) {
+      houses[key] = { when: when, contribui: String(rows[i][5] || ''), beneficios: String(rows[i][6] || ''), sugestao: String(rows[i][7] || '') };
+    }
+  }
+
+  var keys = Object.keys(houses);
+  var result = {
+    total: keys.length,
+    envios: rows.length,
+    atualizado_em: new Date().toISOString(),
+    minimo: MIN_HOUSES_FOR_DETAILS
+  };
+  if (keys.length < MIN_HOUSES_FOR_DETAILS) return result;
+
+  var contribui = { sim: 0, as_vezes: 0, nao: 0, sem_resposta: 0 };
+  var votes = {};
+  BENEFITS.forEach(function (b) { votes[b] = 0; });
+  var others = {};
+  var suggestions = 0;
+  var perDay = {};
+  var tz = Session.getScriptTimeZone() || 'America/Sao_Paulo';
+
+  keys.forEach(function (key) {
+    var h = houses[key];
+    var c = h.contribui.toLowerCase();
+    if (c === 'sim') contribui.sim++;
+    else if (c === 'às vezes' || c === 'as vezes') contribui.as_vezes++;
+    else if (c === 'não' || c === 'nao') contribui.nao++;
+    else contribui.sem_resposta++;
+
+    var seen = {};
+    h.beneficios.split(';').forEach(function (raw) {
+      var name = raw.trim();
+      if (!name) return;
+      name = BENEFIT_ALIASES[name] || name;
+      if (seen[name]) return;
+      seen[name] = true;
+      if (votes.hasOwnProperty(name)) votes[name]++;
+      else others[name] = (others[name] || 0) + 1;
+    });
+
+    if (h.sugestao.trim()) suggestions++;
+
+    var day = Utilities.formatDate(firstSeen[key], tz, 'yyyy-MM-dd');
+    perDay[day] = (perDay[day] || 0) + 1;
+  });
+
+  result.contribui = contribui;
+  result.beneficios = BENEFITS.map(function (b) { return { nome: b, votos: votes[b] }; });
+  result.fora_da_votacao = Object.keys(others).map(function (b) { return { nome: b, votos: others[b] }; });
+  result.sugestoes = suggestions;
+  result.por_dia = Object.keys(perDay).sort().map(function (d) { return { dia: d, casas: perDay[d] }; });
+  return result;
 }
 
 function doPost(e) {

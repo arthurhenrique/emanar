@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Parciais · Morador Contribuinte Vale Verde</title>
+  <meta name="description" content="Resultado parcial do pré-cadastro do Morador Contribuinte Vale Verde: casas interessadas e votos nos benefícios.">
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#bcdde9">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231f6b45'/%3E%3Cpath d='M16 7c-5 3-7 8-6 13 1 3 3 5 6 5s5-2 6-5c1-5-1-10-6-13z' fill='%23d9f2c2'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --green-900: #123d29;
+      --green-800: #1a5236;
+      --green-700: #1f6b45;
+      --green-600: #2a8457;
+      --green-100: #e3f2e6;
+      --green-50: #f2f8f1;
+      --cream: #fbf8f1;
+      --sun: #f2b84b;
+      --sun-soft: #fdf0d3;
+      --text: #1f2a24;
+      --muted: #5b6b62;
+      --border: #d8e5da;
+      --white: #ffffff;
+      --track: #e9efe9;
+      --radius: 16px;
+      --shadow: 0 6px 24px rgba(18, 61, 41, 0.08);
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Nunito", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      font-size: 17px;
+      line-height: 1.55;
+      color: var(--text);
+      background: var(--cream);
+      -webkit-font-smoothing: antialiased;
+    }
+    [hidden] { display: none !important; }
+    .nowrap { white-space: nowrap; }
+    a { color: var(--green-700); }
+    .wrap { width: 100%; max-width: 960px; margin: 0 auto; padding: 0 20px; }
+    h1, h2 { margin: 0; line-height: 1.2; color: var(--green-900); }
+    h2 { font-size: 1.2rem; font-weight: 800; }
+
+    header {
+      background: linear-gradient(180deg, #bcdde9 0%, #d4eaf1 100%);
+      padding: 24px 0 32px;
+    }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      color: var(--green-800);
+      text-decoration: none;
+      margin-bottom: 28px;
+    }
+    .brand svg { width: 32px; height: 32px; }
+    h1 { font-size: 2rem; font-weight: 800; margin-bottom: 8px; }
+    .sub { margin: 0; color: #34493d; max-width: 640px; }
+    .updated { margin: 10px 0 0; font-size: 0.9rem; color: #4b6457; }
+
+    main { padding: 28px 0 48px; }
+
+    .tiles { display: grid; gap: 12px; margin-bottom: 20px; }
+    .tile {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      box-shadow: var(--shadow);
+    }
+    .tile-label { font-size: 0.85rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+    .tile-value { font-size: 2.3rem; font-weight: 800; color: var(--green-900); line-height: 1.1; margin-top: 4px; font-variant-numeric: tabular-nums; }
+    .tile-note { font-size: 0.92rem; color: var(--muted); margin-top: 2px; }
+
+    .card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 20px;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+    }
+    .card-head { margin-bottom: 16px; }
+    .card-head p { margin: 4px 0 0; font-size: 0.92rem; color: var(--muted); }
+
+    /* Barras horizontais: rótulo em cima, barra com o número ao lado */
+    .bars { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+    .bar-row { display: grid; gap: 6px; }
+    .bar-top { display: flex; justify-content: space-between; gap: 12px; font-weight: 700; }
+    .bar-top .val { font-weight: 700; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .bar-top .val strong { color: var(--text); }
+    .bar-track { height: 12px; background: var(--track); border-radius: 6px; overflow: hidden; }
+    .bar-fill { height: 100%; background: var(--green-600); border-radius: 0 6px 6px 0; min-width: 2px; }
+    .bar-fill.zero { min-width: 0; }
+
+    /* Cadastros por dia: colunas */
+    .days-wrap { position: relative; }
+    .days {
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+      height: 160px;
+      padding-top: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .day {
+      flex: 1 1 0;
+      min-width: 0;
+      height: 100%;
+      display: flex;
+      align-items: flex-end;
+      cursor: default;
+      outline: none;
+    }
+    .day span {
+      display: block;
+      width: 100%;
+      max-width: 36px;
+      margin: 0 auto;
+      background: var(--green-600);
+      border-radius: 4px 4px 0 0;
+    }
+    .day span.has { min-height: 2px; }
+    .day:hover span, .day:focus-visible span { background: var(--green-800); }
+    .days-axis { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--muted); margin-top: 6px; }
+    .tip {
+      position: absolute;
+      pointer-events: none;
+      background: var(--green-900);
+      color: var(--white);
+      font-size: 0.85rem;
+      font-weight: 700;
+      padding: 6px 10px;
+      border-radius: 8px;
+      white-space: nowrap;
+      transform: translate(-50%, -100%);
+    }
+
+    .others { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; color: var(--muted); }
+    .others strong { color: var(--text); }
+
+    .state {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 20px;
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+    .state .big { font-size: 3rem; font-weight: 800; color: var(--green-700); line-height: 1; }
+    .state p { margin: 10px auto 0; max-width: 460px; color: var(--muted); }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 52px;
+      padding: 12px 26px;
+      border-radius: 999px;
+      font: inherit;
+      font-weight: 800;
+      text-decoration: none;
+      background: var(--sun);
+      color: var(--green-900);
+    }
+    .cta { text-align: center; margin-top: 8px; }
+    .cta p { color: var(--muted); margin: 0 0 14px; }
+
+    footer { background: var(--green-900); color: #c5e0cd; padding: 28px 0; text-align: center; font-size: 0.9rem; }
+    footer a { color: #c5e0cd; font-weight: 700; }
+    footer p { margin: 4px 0; }
+
+    @media (min-width: 720px) {
+      h1 { font-size: 2.6rem; }
+      .tiles { grid-template-columns: repeat(3, 1fr); }
+      .card { padding: 28px; }
+      .grid-2 { display: grid; grid-template-columns: 1.3fr 1fr; gap: 20px; align-items: start; }
+      .grid-2 .card { margin-bottom: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <a class="brand" href="../">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="#2a8457"/><path d="M16 6c-5.5 3.2-7.6 8.6-6.4 13.6.7 3 3 5.4 6.4 5.4s5.7-2.4 6.4-5.4C23.6 14.6 21.5 9.2 16 6z" fill="#d9f2c2"/><path d="M16 11v14" stroke="#1f6b45" stroke-width="2" stroke-linecap="round"/></svg>
+        Morador Contribuinte Vale Verde
+      </a>
+      <h1>Parciais do <span class="nowrap">pré-cadastro</span></h1>
+      <p class="sub">Quantas casas já demonstraram interesse e quais benefícios estão mais votados. Só números somados: nenhum nome, endereço ou contato aparece aqui.</p>
+      <p class="updated" id="updated">Carregando…</p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- Estados sem detalhes -->
+    <div class="state" id="state" hidden></div>
+
+    <div id="report" hidden>
+      <div class="tiles">
+        <div class="tile">
+          <div class="tile-label">Casas interessadas</div>
+          <div class="tile-value" id="t-total">–</div>
+          <div class="tile-note">endereços diferentes cadastrados</div>
+        </div>
+        <div class="tile">
+          <div class="tile-label">Já contribuem</div>
+          <div class="tile-value" id="t-contrib">–</div>
+          <div class="tile-note" id="t-contrib-note">sempre ou às vezes</div>
+        </div>
+        <div class="tile">
+          <div class="tile-label">Ainda não contribuem</div>
+          <div class="tile-value" id="t-not">–</div>
+          <div class="tile-note" id="t-not-note">das casas cadastradas</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <section class="card" aria-labelledby="h-votes">
+          <div class="card-head">
+            <h2 id="h-votes">Votos por benefício</h2>
+            <p>Quantas casas marcaram cada benefício. Cada casa pode votar em vários.</p>
+          </div>
+          <ul class="bars" id="votes"></ul>
+        </section>
+
+        <div>
+          <section class="card" aria-labelledby="h-contrib">
+            <div class="card-head">
+              <h2 id="h-contrib">Já contribui hoje?</h2>
+              <p>Resposta de cada casa.</p>
+            </div>
+            <ul class="bars" id="contrib"></ul>
+          </section>
+
+          <section class="card" id="others-card" aria-labelledby="h-others" hidden>
+            <div class="card-head">
+              <h2 id="h-others">Opções que saíram da votação</h2>
+              <p>Votos dados antes de a opção sair do formulário.</p>
+            </div>
+            <ul class="others" id="others"></ul>
+          </section>
+        </div>
+      </div>
+
+      <section class="card" aria-labelledby="h-days">
+        <div class="card-head">
+          <h2 id="h-days">Novas casas por dia</h2>
+          <p id="days-note">Dia em que cada casa se cadastrou pela primeira vez.</p>
+        </div>
+        <div class="days-wrap">
+          <div class="days" id="days" role="list"></div>
+          <div class="tip" id="tip" hidden></div>
+        </div>
+        <div class="days-axis"><span id="d-first"></span><span id="d-last"></span></div>
+      </section>
+    </div>
+
+    <div class="cta">
+      <p>Ainda não se cadastrou? Leva menos de 1 minuto.</p>
+      <a class="btn" href="../#cadastro">Quero participar</a>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <p><a href="../">Voltar para a página do Morador Contribuinte</a></p>
+      <p>Desenvolvido por <a href="https://www.instagram.com/emanartech/" target="_blank" rel="noopener">Emanar (@emanartech)</a></p>
+    </div>
+  </footer>
+
+  <script src="../config.js"></script>
+  <script>
+    (function () {
+      var API = (typeof APPS_SCRIPT_URL === "string" ? APPS_SCRIPT_URL : "").trim();
+      var $ = function (id) { return document.getElementById(id); };
+      var fmt = function (n) { return n.toLocaleString("pt-BR"); };
+      var pct = function (n, total) { return total ? Math.round((n / total) * 100) + "%" : "0%"; };
+
+      function showState(html) {
+        $("state").innerHTML = html;
+        $("state").hidden = false;
+        $("report").hidden = true;
+      }
+
+      function el(tag, cls, text) {
+        var e = document.createElement(tag);
+        if (cls) e.className = cls;
+        if (text != null) e.textContent = text;
+        return e;
+      }
+
+      function bars(listId, items, total) {
+        var list = $(listId);
+        list.innerHTML = "";
+        var max = Math.max.apply(null, items.map(function (i) { return i.value; }).concat([1]));
+        items.forEach(function (item) {
+          var li = el("li", "bar-row");
+          var top = el("div", "bar-top");
+          top.appendChild(el("span", null, item.label));
+          var val = el("span", "val");
+          var strong = el("strong", null, fmt(item.value));
+          val.appendChild(strong);
+          val.appendChild(document.createTextNode(" · " + pct(item.value, total)));
+          top.appendChild(val);
+          var track = el("div", "bar-track");
+          var fill = el("div", "bar-fill" + (item.value ? "" : " zero"));
+          fill.style.width = (item.value / max) * 100 + "%";
+          track.appendChild(fill);
+          li.appendChild(top);
+          li.appendChild(track);
+          list.appendChild(li);
+        });
+      }
+
+      function dayLabel(iso) {
+        var p = iso.split("-");
+        return p[2] + "/" + p[1];
+      }
+
+      function days(perDay) {
+        var box = $("days");
+        var tip = $("tip");
+        box.innerHTML = "";
+        if (!perDay.length) return;
+        // Preenche os dias sem cadastro entre o primeiro e o último
+        var map = {};
+        perDay.forEach(function (d) { map[d.dia] = d.casas; });
+        var all = [];
+        var cur = new Date(perDay[0].dia + "T12:00:00");
+        var end = new Date(perDay[perDay.length - 1].dia + "T12:00:00");
+        while (cur <= end && all.length < 400) {
+          var iso = cur.getFullYear() + "-" + String(cur.getMonth() + 1).padStart(2, "0") + "-" + String(cur.getDate()).padStart(2, "0");
+          all.push({ dia: iso, casas: map[iso] || 0 });
+          cur.setDate(cur.getDate() + 1);
+        }
+        var max = Math.max.apply(null, all.map(function (d) { return d.casas; }).concat([1]));
+        all.forEach(function (d) {
+          var col = el("div", "day");
+          col.setAttribute("role", "listitem");
+          col.tabIndex = 0;
+          var text = dayLabel(d.dia) + ": " + d.casas + (d.casas === 1 ? " casa" : " casas");
+          col.setAttribute("aria-label", text);
+          var bar = el("span", d.casas ? "has" : null);
+          bar.style.height = d.casas ? (d.casas / max) * 100 + "%" : "0";
+          col.appendChild(bar);
+          function show() {
+            var wrap = box.parentNode.getBoundingClientRect();
+            var r = col.getBoundingClientRect();
+            tip.textContent = text;
+            tip.hidden = false;
+            var x = r.left - wrap.left + r.width / 2;
+            var half = tip.offsetWidth / 2;
+            x = Math.max(half, Math.min(wrap.width - half, x));
+            tip.style.left = x + "px";
+            tip.style.top = (bar.getBoundingClientRect().top - wrap.top - 6) + "px";
+          }
+          col.addEventListener("mouseenter", show);
+          col.addEventListener("focus", show);
+          col.addEventListener("click", show);
+          col.addEventListener("mouseleave", function () { tip.hidden = true; });
+          col.addEventListener("blur", function () { tip.hidden = true; });
+          box.appendChild(col);
+        });
+        $("d-first").textContent = dayLabel(all[0].dia);
+        $("d-last").textContent = all.length > 1 ? dayLabel(all[all.length - 1].dia) : "";
+      }
+
+      function render(d) {
+        var when = d.atualizado_em ? new Date(d.atualizado_em) : new Date();
+        $("updated").textContent = "Atualizado em " + when.toLocaleDateString("pt-BR") + " às " +
+          when.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) + ".";
+
+        if (typeof d.total !== "number") { showState("<p>Não foi possível ler as parciais agora.</p>"); return; }
+
+        if (!d.beneficios) {
+          var minimo = d.minimo || 5;
+          if (typeof d.minimo !== "number") {
+            showState('<div class="big">' + fmt(d.total) + '</div><p>casas cadastradas até agora. O resumo detalhado ainda não está disponível.</p>');
+          } else {
+            showState('<div class="big">' + fmt(d.total) + '</div><p>' + (d.total === 1 ? "casa cadastrada" : "casas cadastradas") +
+              ' até agora. Para proteger quem respondeu, o resumo aparece a partir de ' + minimo + ' casas.</p>');
+          }
+          return;
+        }
+
+        var total = d.total;
+        var c = d.contribui || { sim: 0, as_vezes: 0, nao: 0, sem_resposta: 0 };
+        $("t-total").textContent = fmt(total);
+        $("t-contrib").textContent = pct(c.sim + c.as_vezes, total);
+        $("t-contrib-note").textContent = fmt(c.sim + c.as_vezes) + " casas, sempre ou às vezes";
+        $("t-not").textContent = pct(c.nao, total);
+        $("t-not-note").textContent = fmt(c.nao) + (c.nao === 1 ? " casa" : " casas") + " das cadastradas";
+
+        var votes = d.beneficios.slice().sort(function (a, b) { return b.votos - a.votos; })
+          .map(function (b) { return { label: b.nome, value: b.votos }; });
+        bars("votes", votes, total);
+
+        var contrib = [
+          { label: "Sim", value: c.sim },
+          { label: "Às vezes", value: c.as_vezes },
+          { label: "Não", value: c.nao }
+        ];
+        if (c.sem_resposta) contrib.push({ label: "Não respondeu", value: c.sem_resposta });
+        bars("contrib", contrib, total);
+
+        var others = (d.fora_da_votacao || []).filter(function (o) { return o.votos > 0; });
+        $("others-card").hidden = !others.length;
+        $("others").innerHTML = "";
+        others.sort(function (a, b) { return b.votos - a.votos; }).forEach(function (o) {
+          var li = el("li");
+          li.appendChild(el("strong", null, o.nome));
+          li.appendChild(document.createTextNode(": " + fmt(o.votos) + (o.votos === 1 ? " voto" : " votos")));
+          $("others").appendChild(li);
+        });
+
+        days(d.por_dia || []);
+
+        $("state").hidden = true;
+        $("report").hidden = false;
+      }
+
+      if (!API) { $("updated").textContent = ""; showState("<p>As parciais ainda não estão conectadas à planilha.</p>"); return; }
+
+      fetch(API + (API.indexOf("?") === -1 ? "?" : "&") + "view=parciais")
+        .then(function (r) { return r.json(); })
+        .then(render)
+        .catch(function () {
+          $("updated").textContent = "";
+          showState("<p>Não foi possível ler as parciais agora. Tente de novo em instantes.</p>");
+        });
+    })();
+  </script>
+</body>
+</html>
