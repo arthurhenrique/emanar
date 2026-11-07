@@ -5,3 +5,6 @@ const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwsk-EpHCJWDbup
 // Número de WhatsApp do programa, só dígitos, com DDI e DDD (ex.: "5511999998888").
 // Usado no rodapé e como alternativa quando o envio do formulário falhar.
 const WHATSAPP_CONTATO = "5513996469075";
+
+// Total aproximado de casas do bairro, usado na meta da página de parciais.
+const TOTAL_CASAS_BAIRRO = 300;
