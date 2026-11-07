@@ -84,7 +84,12 @@ function parciais_() {
 
   var contribui = { sim: 0, as_vezes: 0, nao: 0, sem_resposta: 0 };
   var votes = {};
-  BENEFITS.forEach(function (b) { votes[b] = 0; });
+  var bySegment = {};
+  BENEFITS.forEach(function (b) {
+    votes[b] = 0;
+    bySegment[b] = { sim: 0, as_vezes: 0, nao: 0, sem_resposta: 0 };
+  });
+  var pairs = {};
   var others = {};
   var suggestions = 0;
   var perDay = {};
@@ -93,10 +98,11 @@ function parciais_() {
   keys.forEach(function (key) {
     var h = houses[key];
     var c = h.contribui.toLowerCase();
-    if (c === 'sim') contribui.sim++;
-    else if (c === 'às vezes' || c === 'as vezes') contribui.as_vezes++;
-    else if (c === 'não' || c === 'nao') contribui.nao++;
-    else contribui.sem_resposta++;
+    var segment = c === 'sim' ? 'sim'
+      : (c === 'às vezes' || c === 'as vezes') ? 'as_vezes'
+      : (c === 'não' || c === 'nao') ? 'nao'
+      : 'sem_resposta';
+    contribui[segment]++;
 
     var seen = {};
     h.beneficios.split(';').forEach(function (raw) {
@@ -105,9 +111,22 @@ function parciais_() {
       name = BENEFIT_ALIASES[name] || name;
       if (seen[name]) return;
       seen[name] = true;
-      if (votes.hasOwnProperty(name)) votes[name]++;
-      else others[name] = (others[name] || 0) + 1;
+      if (votes.hasOwnProperty(name)) {
+        votes[name]++;
+        bySegment[name][segment]++;
+      } else {
+        others[name] = (others[name] || 0) + 1;
+      }
     });
+
+    // Pares de benefícios atuais escolhidos pela mesma casa
+    var chosen = BENEFITS.filter(function (b) { return seen[b]; });
+    for (var a = 0; a < chosen.length; a++) {
+      for (var b = a + 1; b < chosen.length; b++) {
+        var pk = chosen[a] + '|' + chosen[b];
+        pairs[pk] = (pairs[pk] || 0) + 1;
+      }
+    }
 
     if (h.sugestao.trim()) suggestions++;
 
@@ -116,7 +135,13 @@ function parciais_() {
   });
 
   result.contribui = contribui;
-  result.beneficios = BENEFITS.map(function (b) { return { nome: b, votos: votes[b] }; });
+  result.beneficios = BENEFITS.map(function (b) {
+    return { nome: b, votos: votes[b], por_contribuicao: bySegment[b] };
+  });
+  result.pares = Object.keys(pairs)
+    .map(function (k) { var ab = k.split('|'); return { a: ab[0], b: ab[1], casas: pairs[k] }; })
+    .sort(function (x, y) { return y.casas - x.casas; })
+    .slice(0, 5);
   result.fora_da_votacao = Object.keys(others).map(function (b) { return { nome: b, votos: others[b] }; });
   result.sugestoes = suggestions;
   result.por_dia = Object.keys(perDay).sort().map(function (d) { return { dia: d, casas: perDay[d] }; });
