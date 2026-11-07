@@ -309,7 +309,7 @@
         if (!HOUSES) return;
         var p = Math.min(100, (total / HOUSES) * 100);
         $("goal-pct").textContent = pct(total, HOUSES);
-        $("goal-text").innerHTML = "<strong>" + fmt(total) + "</strong> de cerca de " + fmt(HOUSES) + " casas do bairro";
+        $("goal-text").innerHTML = "<strong>" + fmt(total) + "</strong> de cerca de " + fmt(HOUSES) + " famílias do bairro";
         $("goal-fill").style.width = p + "%";
         $("goal-bar").setAttribute("aria-valuemax", HOUSES);
         $("goal-bar").setAttribute("aria-valuenow", total);
