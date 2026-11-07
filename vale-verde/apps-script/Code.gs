@@ -5,9 +5,14 @@
  * (Extensões → Apps Script) e publique como Web App.
  *
  * doPost: grava uma linha por cadastro.
+ *         Com {"action":"relatorio","chave":"..."} devolve o relatório privado
+ *         (nomes, contatos e sugestões), só para quem tem a chave.
  * doGet:  devolve apenas o total de casas únicas, ex.: {"total": 42}.
  *         Com ?view=parciais, devolve só contagens para a página de parciais
  *         (nunca nome, endereço, contato ou texto de sugestão).
+ *
+ * A chave do relatório fica na aba "Chave do relatório" da planilha, criada
+ * sozinha com uma chave aleatória. Para trocar a chave, edite a célula A2.
  */
 
 var SHEET_NAME = 'Cadastros';
@@ -29,6 +34,10 @@ var ADDRESS_COLUMN = HEADERS.length; // última coluna: endereço normalizado
 
 var MIN_HOUSES_FOR_DETAILS = 5;
 
+var KEY_SHEET_NAME = 'Chave do relatório';
+var MAX_WRONG_KEYS = 10;          // tentativas erradas...
+var WRONG_KEY_WINDOW_S = 15 * 60; // ...a cada 15 minutos
+
 // Benefícios na ordem da página. Nomes antigos contam para o nome atual.
 var BENEFITS = [
   'Registro automático na cancela',
@@ -46,6 +55,7 @@ var BENEFIT_ALIASES = {
 };
 
 function doGet(e) {
+  reportKey_(); // garante que a aba da chave exista
   if (e && e.parameter && e.parameter.view === 'parciais') {
     return json_(parciais_());
   }
@@ -56,22 +66,12 @@ function doGet(e) {
  * Resumo agregado por casa (endereço normalizado). Quando a mesma casa
  * envia mais de uma vez, vale o envio mais recente.
  */
-function parciais_() {
-  var sheet = sheet_();
-  var last = sheet.getLastRow();
-  var rows = last < 2 ? [] : sheet.getRange(2, 1, last - 1, HEADERS.length).getValues();
-
-  var houses = {};
-  var firstSeen = {};
-  for (var i = 0; i < rows.length; i++) {
-    var key = String(rows[i][ADDRESS_COLUMN - 1] || '');
-    if (!key) continue;
-    var when = rows[i][0] instanceof Date ? rows[i][0] : new Date(rows[i][0]);
-    if (!firstSeen[key] || when < firstSeen[key]) firstSeen[key] = when;
-    if (!houses[key] || when >= houses[key].when) {
-      houses[key] = { when: when, contribui: String(rows[i][5] || ''), beneficios: String(rows[i][6] || ''), sugestao: String(rows[i][7] || '') };
-    }
-  }
+function parciais_(data, minimo) {
+  data = data || collect_();
+  minimo = minimo == null ? MIN_HOUSES_FOR_DETAILS : minimo;
+  var houses = data.houses;
+  var firstSeen = data.firstSeen;
+  var rows = data.rows;
 
   var keys = Object.keys(houses);
   var result = {
@@ -80,7 +80,7 @@ function parciais_() {
     atualizado_em: new Date().toISOString(),
     minimo: MIN_HOUSES_FOR_DETAILS
   };
-  if (keys.length < MIN_HOUSES_FOR_DETAILS) return result;
+  if (keys.length < minimo) return result;
 
   var contribui = { sim: 0, as_vezes: 0, nao: 0, sem_resposta: 0 };
   var votes = {};
@@ -97,19 +97,11 @@ function parciais_() {
 
   keys.forEach(function (key) {
     var h = houses[key];
-    var c = h.contribui.toLowerCase();
-    var segment = c === 'sim' ? 'sim'
-      : (c === 'às vezes' || c === 'as vezes') ? 'as_vezes'
-      : (c === 'não' || c === 'nao') ? 'nao'
-      : 'sem_resposta';
+    var segment = segment_(h.contribui);
     contribui[segment]++;
 
     var seen = {};
-    h.beneficios.split(';').forEach(function (raw) {
-      var name = raw.trim();
-      if (!name) return;
-      name = BENEFIT_ALIASES[name] || name;
-      if (seen[name]) return;
+    benefitList_(h.beneficios).forEach(function (name) {
       seen[name] = true;
       if (votes.hasOwnProperty(name)) {
         votes[name]++;
@@ -148,12 +140,129 @@ function parciais_() {
   return result;
 }
 
+/** Lê a planilha e junta os envios por casa (vale o envio mais recente). */
+function collect_() {
+  var sheet = sheet_();
+  var last = sheet.getLastRow();
+  var rows = last < 2 ? [] : sheet.getRange(2, 1, last - 1, HEADERS.length).getValues();
+  var houses = {};
+  var firstSeen = {};
+  for (var i = 0; i < rows.length; i++) {
+    var key = String(rows[i][ADDRESS_COLUMN - 1] || '');
+    if (!key) continue;
+    var when = rows[i][0] instanceof Date ? rows[i][0] : new Date(rows[i][0]);
+    if (!firstSeen[key] || when < firstSeen[key]) firstSeen[key] = when;
+    if (!houses[key]) houses[key] = { envios: 0 };
+    houses[key].envios++;
+    if (!houses[key].when || when >= houses[key].when) {
+      var h = houses[key];
+      h.when = when;
+      h.nome = String(rows[i][1] || '');
+      h.endereco = String(rows[i][2] || '');
+      h.email = String(rows[i][3] || '');
+      h.whatsapp = String(rows[i][4] || '');
+      h.contribui = String(rows[i][5] || '');
+      h.beneficios = String(rows[i][6] || '');
+      h.sugestao = String(rows[i][7] || '');
+    }
+  }
+  return { rows: rows, houses: houses, firstSeen: firstSeen };
+}
+
+function segment_(answer) {
+  var c = String(answer || '').toLowerCase();
+  return c === 'sim' ? 'sim'
+    : (c === 'às vezes' || c === 'as vezes') ? 'as_vezes'
+    : (c === 'não' || c === 'nao') ? 'nao'
+    : 'sem_resposta';
+}
+
+/** "a; b; Tag ou leitura de placa" -> nomes atuais, sem repetir. */
+function benefitList_(text) {
+  var out = [];
+  var seen = {};
+  String(text || '').split(';').forEach(function (raw) {
+    var name = raw.trim();
+    if (!name) return;
+    name = BENEFIT_ALIASES[name] || name;
+    if (seen[name]) return;
+    seen[name] = true;
+    out.push(name);
+  });
+  return out;
+}
+
+/** Chave do relatório: aba própria da planilha, criada com chave aleatória. */
+function reportKey_() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(KEY_SHEET_NAME);
+  if (!sheet) {
+    sheet = ss.insertSheet(KEY_SHEET_NAME);
+    sheet.getRange('A1').setValue('Chave para abrir o relatório privado (pode trocar; não compartilhe):');
+    sheet.getRange('A2').setValue(Utilities.getUuid().replace(/-/g, '').slice(0, 12));
+    sheet.setColumnWidth(1, 520);
+  }
+  return String(sheet.getRange('A2').getValue() || '').trim();
+}
+
+function relatorio_(chave) {
+  var cache = CacheService.getScriptCache();
+  var wrong = Number(cache.get('relatorio_erros') || 0);
+  if (wrong >= MAX_WRONG_KEYS) return { ok: false, error: 'bloqueado' };
+
+  var key = reportKey_();
+  if (!key || String(chave || '').trim() !== key) {
+    cache.put('relatorio_erros', String(wrong + 1), WRONG_KEY_WINDOW_S);
+    return { ok: false, error: 'chave_invalida' };
+  }
+
+  var data = collect_();
+  var tz = Session.getScriptTimeZone() || 'America/Sao_Paulo';
+  var iso = function (d) { return Utilities.formatDate(d, tz, "yyyy-MM-dd'T'HH:mm:ss"); };
+
+  var casas = Object.keys(data.houses).map(function (k) {
+    var h = data.houses[k];
+    return {
+      nome: h.nome,
+      endereco: h.endereco,
+      email: h.email,
+      whatsapp: h.whatsapp,
+      contribui: segment_(h.contribui),
+      beneficios: benefitList_(h.beneficios),
+      sugestao: h.sugestao,
+      primeiro_envio: iso(data.firstSeen[k]),
+      ultimo_envio: iso(h.when),
+      envios: h.envios
+    };
+  });
+
+  // Todas as sugestões, inclusive de envios antigos da mesma casa
+  var sugestoes = [];
+  var seen = {};
+  data.rows.forEach(function (r) {
+    var texto = String(r[7] || '').trim();
+    if (!texto) return;
+    var k = String(r[ADDRESS_COLUMN - 1] || '') + '|' + texto.toLowerCase();
+    if (seen[k]) return;
+    seen[k] = true;
+    var when = r[0] instanceof Date ? r[0] : new Date(r[0]);
+    sugestoes.push({ data: iso(when), nome: String(r[1] || ''), endereco: String(r[2] || ''), contribui: segment_(r[5]), texto: texto });
+  });
+  sugestoes.sort(function (a, b) { return a.data < b.data ? 1 : -1; });
+
+  return { ok: true, resumo: parciais_(data, 0), casas: casas, sugestoes: sugestoes };
+}
+
 function doPost(e) {
   var data;
   try {
     data = JSON.parse((e && e.postData && e.postData.contents) || '{}');
   } catch (err) {
     return json_({ ok: false, error: 'invalid_json' });
+  }
+
+  if (data.action === 'relatorio') {
+    return json_(relatorio_(data.chave));
   }
 
   // Honeypot preenchido: robô. Responde como sucesso e não grava nada.

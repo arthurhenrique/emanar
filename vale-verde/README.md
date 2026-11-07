@@ -55,6 +55,19 @@ Para funcionar, o script da planilha precisa estar na versão mais recente:
 2. **Implantar → Gerenciar implantações → editar (lápis) → Versão: Nova versão → Implantar.** Assim a URL continua a mesma.
 3. Teste abrindo a URL do script com `?view=parciais` no fim. Deve aparecer `{"total":...,"minimo":5,...}`.
 
+## Relatório privado (`/vale-verde/relatorio/`)
+
+Para quem administra o programa: ranking dos benefícios (quem está ganhando e o que está em alta),
+todas as sugestões e a lista de quem contribui, quem contribui às vezes e quem não contribui, com
+WhatsApp e e-mail. Dá para buscar, filtrar e baixar cada lista como planilha.
+
+- Abre com uma **chave**. Ao colar a versão nova do script, ele cria sozinho a aba
+  **"Chave do relatório"** na planilha, com uma chave aleatória na célula A2. Para trocar a chave,
+  é só editar essa célula.
+- A chave não fica no código (que é público) nem vai no endereço da página. Depois de 10 tentativas
+  erradas em 15 minutos, o relatório trava por um tempo.
+- Contém dados pessoais: use só para contato sobre o programa, como diz o consentimento do formulário.
+
 ## 4. Configurar a página
 
 Abra `config.js` e preencha:
